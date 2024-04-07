@@ -28,27 +28,45 @@
 
 #define RED "\033[1;31m"
 #define CYAN "\033[1;36m"
+#define GREEN "\033[1;32m"
 #define RESET "\033[0m"
 
-std::string castHTML(const char* htmlResponse) {
+std::string castHTML(const std::string& htmlResponse) {
   std::string htmlString(htmlResponse);
   std::regex tagRegex("\\s{2,}|<[^>]+>|\\n"); // Regular expression to match HTML tags
   std::string fixedHTML = std::regex_replace(htmlString, tagRegex, ""); // Replaces <div> ..... </diV with ""
   fixedHTML.erase(0, 391);
-  // fixedHTML = std::regex_replace(fixedHTML, std::regex("  "), "\n"); // Replaces "  " with "\n"
+  fixedHTML = std::regex_replace(fixedHTML, std::regex("   "), ""); // Replaces "  " with "\n"
+  fixedHTML = std::regex_replace(fixedHTML, std::regex("  "), "\n"); // Replaces "  " with "\n"
   return fixedHTML;
 }
 
+int getLegoParts(std::string htmlResponse) {
+  std::string::size_type keywordPosition = 0;
+  keywordPosition = htmlResponse.find("figura");
+  int legoParts = std::stoi(htmlResponse.substr(keywordPosition + 6));
+  return legoParts;
+}
+
+std::string formatResponse(std::string htmlResponse) {
+  std::regex totalRegex("Total de piezas para armar esta figura\\d+");
+  htmlResponse = std::regex_replace(htmlResponse, totalRegex, std::string(""));
+  std::regex multipleNewlinesRegex("\\n{2,}");
+  htmlResponse = std::regex_replace(htmlResponse, multipleNewlinesRegex, "\n");
+  return htmlResponse;
+}
+
 int main(int argc, char* argv[]) {
-  
+  // system("clear");
   if (argc > 1) {
     const char* osv4 = "163.178.104.187";
     VSocket* client;
     VSocket* client2;
     char bufferArray[100000];
     char bufferArray2[100000];
-    std::string animal;
-    std::string request = "";
+    std::string animal; std::string request = ""; std::string htmlResponse; std::string finalResponse = "";
+    int legoParts = 0;
+    bool figureFoud = false;
 
     // Get the animal and legoPart from command line arguments
     animal = argv[1];
@@ -74,17 +92,25 @@ int main(int argc, char* argv[]) {
       client->Read(bufferArray, 100000);
       client->Write(request.c_str());
       client->Read(bufferArray, 100000);
-      std::string htmlResponse = castHTML(bufferArray);
+      htmlResponse = castHTML(bufferArray);
 
       if (htmlResponse.empty()) {
-        std::cout << RED << "\n\tError 404! Figure NOT found\n" << RESET << std::endl;
+        std::cout << RED << "\n    Error 404! Figure NOT found\n" << RESET << std::endl;
       } else if (htmlResponse.find("Illegal request") != std::string::npos) {
-        std::cout << RED << "\n\tError 404! Illegal request\n" << RESET << std::endl;
+        std::cout << RED << "\n    Error 404! Illegal request\n" << RESET << std::endl;
       } else {
-        //std::cout << htmlResponse << std::endl << std::endl;
-        std::cout << bufferArray << std::endl << std::endl;
+        figureFoud = true;
+        legoParts += getLegoParts(htmlResponse);
+        finalResponse += htmlResponse;
+        //std::cout << htmlResponse << std::endl;
       }
+
       delete client; // Free the memory allocated for the socket
+    }
+
+    if (figureFoud) {
+      std::cout << formatResponse(finalResponse) << std::endl;
+      std::cout << GREEN << "  Piezas necesarias para armar la figura: " << legoParts << "\n" << RESET;
     }
   
   } else {
