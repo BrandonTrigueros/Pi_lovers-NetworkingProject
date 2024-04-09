@@ -25,7 +25,7 @@
   *  @param	bool ipv6: if we need a IPv6 socket
   *
  **/
-Socket::Socket( char type, bool IPv6 ){
+Socket::Socket(char type, bool IPv6 ){
 
    this->InitVSocket( type, IPv6 );
 

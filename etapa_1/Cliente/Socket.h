@@ -22,7 +22,7 @@
 class Socket : public VSocket {
 
    public:
-      Socket( char, bool = false );
+      Socket(char, bool = false );
       ~Socket();
       void Close();
       int Connect( const char *, int );

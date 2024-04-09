@@ -70,12 +70,18 @@ int main(int argc, char* argv[]) {
     // Get the animal and legoPart from command line arguments
     animal = argv[1];
 
+    if (argc > 2) {
+      client = new SSLSocket();
+      client->Connect(osv4, 443); 
+    } else {
+      client = new Socket('s', false);
+      client->Connect(osv4, 80); 
+    }
+    
     std::transform(animal.begin(), animal.end(), animal.begin(), ::toupper);
     std::cout << CYAN << "\n\tLEGO PIECES FOR " << animal << "\n" << RESET;
     std::transform(animal.begin(), animal.end(), animal.begin(), ::tolower);
 
-    client = new SSLSocket();			// Create an IPv4 TCP SSL socket
-    client->Connect(osv4, 443); 
     // Create an SSL socket and connect to the server
     for (int requestNumber = 1; requestNumber < 3; requestNumber++) {
 
