@@ -12,113 +12,14 @@
 *
 *    ./tcp-cli.out ipVer[4|6] SSL[0|1]
 **/
-
-#include <algorithm>
-#include <cctype>
-#include <stdio.h>
-#include <string>
-#include <string.h>
-#include <stdlib.h>
-#include <regex>
-#include <iostream>
-
-#include "VSocket.h"
-#include "Socket.h"
-#include "SSLSocket.h"
-
-#define RED "\033[1;31m"
-#define CYAN "\033[1;36m"
-#define GREEN "\033[1;32m"
-#define RESET "\033[0m"
-
-std::string castHTML(const std::string htmlResponse) {
-  std::regex tagRegex("\\s{2,}|<[^>]+>|\\n"); // Regular expression to match HTML tags
-  std::string fixedHTML = std::regex_replace(htmlResponse, tagRegex, ""); // Replaces <div> ..... </diV with ""
-  fixedHTML.erase(0, 537);
-  fixedHTML = std::regex_replace(fixedHTML, std::regex("   "), ""); // Replaces "  " with "\n"
-  fixedHTML = std::regex_replace(fixedHTML, std::regex("  "), "\n"); // Replaces "  " with "\n"
-  return fixedHTML;
-}
-
-int getLegoParts(std::string htmlResponse) {
-  std::string::size_type keywordPosition = 0;
-  keywordPosition = htmlResponse.find("figura");
-  int legoParts = std::stoi(htmlResponse.substr(keywordPosition + 6));
-  return legoParts;
-}
-
-std::string formatResponse(std::string htmlResponse) {
-  std::regex totalRegex("Total de piezas para armar esta figura\\d+");
-  htmlResponse = std::regex_replace(htmlResponse, totalRegex, std::string(""));
-  std::regex multipleNewlinesRegex("\\n{2,}");
-  htmlResponse = std::regex_replace(htmlResponse, multipleNewlinesRegex, "\n");
-  return htmlResponse;
-}
+#include "Client.h"
 
 int main(int argc, char* argv[]) {
-  // system("clear");
-  if (argc > 1) {
-    const char* osv4 = "163.178.104.187";
-    VSocket* client;
-    VSocket* client2;
-    char bufferArray[8000];
-    std::string concatResponse;
-    std::string animal; std::string request = ""; std::string htmlResponse; std::string finalResponse = "";
-    int legoParts = 0;
-    bool figureFoud = false;
-
-    // Get the animal and legoPart from command line arguments
-    animal = argv[1];
-
-    if (argc > 2) {
-      client = new SSLSocket();
-      client->Connect(osv4, 443); 
-    } else {
-      client = new Socket('s', false);
-      client->Connect(osv4, 80); 
-    }
-    
-    std::transform(animal.begin(), animal.end(), animal.begin(), ::toupper);
-    std::cout << CYAN << "\n\tLEGO PIECES FOR " << animal << "\n" << RESET;
-    std::transform(animal.begin(), animal.end(), animal.begin(), ::tolower);
-
-    // Create an SSL socket and connect to the server
-    for (int requestNumber = 1; requestNumber < 3; requestNumber++) {
-
-      request = "GET /lego/list.php?figure=" + animal + "&part=" + ((char)(requestNumber + 48)) +  " HTTP/1.1\r\nhost: redes.ecci\r\n\r\n";
-      client->Write(request.c_str());
-      // Reset the buffers
-      concatResponse = "";
-      memset(bufferArray, 0, 8000);
-      // Read the response from the server
-      while (concatResponse.find("</HTML>") == std::string::npos && concatResponse.find("</html>") == std::string::npos){
-        client->Read(bufferArray, 8000);
-        concatResponse += bufferArray;
-      }
-
-      htmlResponse = castHTML(concatResponse);
-      // Check if the figure was found
-      if (htmlResponse.empty()) {
-        std::cout << RED << "\n    Error 404! Figure NOT found\n" << RESET << std::endl;
-      } else if (htmlResponse.find("Illegal request") != std::string::npos) {
-        std::cout << RED << "\n    Error 404! Illegal request\n" << RESET << std::endl;
-      } else {
-        figureFoud = true;
-        legoParts += getLegoParts(htmlResponse);
-        finalResponse += htmlResponse;
-      }
-      
-    }
-
-    delete client; // Free the memory allocated for the socket
-
-    if (figureFoud) {
-      std::cout << formatResponse(finalResponse) << std::endl;
-      std::cout << GREEN << "  Piezas necesarias para armar la figura: " << legoParts << "\n" << RESET;
-    }
-  
-  } else {
-    std::cout << RED << "\n\tUsage: ./main.out <animal> \n" << RESET << std::endl;
+  Client client;
+  if (client.createSocket(argc, argv)) {
+    client.printTitle();
+    client.run();
+    client.printResponse();
   }
   return 0;  
 }

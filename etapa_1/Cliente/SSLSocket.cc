@@ -23,14 +23,10 @@
   *
  **/
 SSLSocket::SSLSocket( bool IPv6 ) {
-
    this->InitVSocket( 's', IPv6 );
-
    this->SSLContext = nullptr;
    this->SSLStruct = nullptr;
-
    this->Init();					// Initializes to client context
-
 }
 
 

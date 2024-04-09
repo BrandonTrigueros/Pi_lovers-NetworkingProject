@@ -17,11 +17,13 @@ $(info $$TARGETS = $(TARGETS))
 	$(info $$^ = $^)
 	$(CXX) $^ Socket.o $(LDFLAGS) -o $^
 
-main.out: main.o VSocket.o Socket.o SSLSocket.o
-	$(CXX) main.o VSocket.o Socket.o SSLSocket.o $(LDFLAGS) -o $@
+main.out: main.o VSocket.o Socket.o SSLSocket.o Client.o
+	$(CXX) main.o VSocket.o Socket.o SSLSocket.o  Client.o $(LDFLAGS) -o $@
+
 
 clean:
 	rm -f *.o *.out
+
 
 test1:
 	./main.out giraffe
