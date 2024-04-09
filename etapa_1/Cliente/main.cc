@@ -31,11 +31,10 @@
 #define GREEN "\033[1;32m"
 #define RESET "\033[0m"
 
-std::string castHTML(const std::string& htmlResponse) {
-  std::string htmlString(htmlResponse);
+std::string castHTML(const std::string htmlResponse) {
   std::regex tagRegex("\\s{2,}|<[^>]+>|\\n"); // Regular expression to match HTML tags
-  std::string fixedHTML = std::regex_replace(htmlString, tagRegex, ""); // Replaces <div> ..... </diV with ""
-  fixedHTML.erase(0, 391);
+  std::string fixedHTML = std::regex_replace(htmlResponse, tagRegex, ""); // Replaces <div> ..... </diV with ""
+  fixedHTML.erase(0, 537);
   fixedHTML = std::regex_replace(fixedHTML, std::regex("   "), ""); // Replaces "  " with "\n"
   fixedHTML = std::regex_replace(fixedHTML, std::regex("  "), "\n"); // Replaces "  " with "\n"
   return fixedHTML;
@@ -62,38 +61,37 @@ int main(int argc, char* argv[]) {
     const char* osv4 = "163.178.104.187";
     VSocket* client;
     VSocket* client2;
-    char bufferArray[100000];
-    char bufferArray2[100000];
+    char bufferArray[8000];
+    std::string concatResponse;
     std::string animal; std::string request = ""; std::string htmlResponse; std::string finalResponse = "";
     int legoParts = 0;
     bool figureFoud = false;
 
     // Get the animal and legoPart from command line arguments
     animal = argv[1];
-    // Construct the HTTP request using std::stringstream
-    std::stringstream requestStream;
 
     std::transform(animal.begin(), animal.end(), animal.begin(), ::toupper);
     std::cout << CYAN << "\n\tLEGO PIECES FOR " << animal << "\n" << RESET;
     std::transform(animal.begin(), animal.end(), animal.begin(), ::tolower);
 
-    for (int requestNumber = 0; requestNumber < 2; requestNumber++) {
-      // Create an SSL socket and connect to the server
-      client = new SSLSocket();			// Create an IPv4 TCP SSL socket
-      client->Connect(osv4, 443); 
+    client = new SSLSocket();			// Create an IPv4 TCP SSL socket
+    client->Connect(osv4, 443); 
+    // Create an SSL socket and connect to the server
+    for (int requestNumber = 1; requestNumber < 3; requestNumber++) {
 
-      memset(bufferArray, 0, 100000);
-      requestStream.str("");
-      requestStream.clear();
-      requestStream << "GET /lego/list.php?figure=" << animal << "&part=" << (requestNumber + 1) <<  " HTTP/1.1\r\nhost: redes.ecci\r\n\r\n";
-      request = requestStream.str();
-
+      request = "GET /lego/list.php?figure=" + animal + "&part=" + ((char)(requestNumber + 48)) +  " HTTP/1.1\r\nhost: redes.ecci\r\n\r\n";
       client->Write(request.c_str());
-      client->Read(bufferArray, 100000);
-      client->Write(request.c_str());
-      client->Read(bufferArray, 100000);
-      htmlResponse = castHTML(bufferArray);
+      // Reset the buffers
+      concatResponse = "";
+      memset(bufferArray, 0, 8000);
+      // Read the response from the server
+      while (concatResponse.find("</HTML>") == std::string::npos && concatResponse.find("</html>") == std::string::npos){
+        client->Read(bufferArray, 8000);
+        concatResponse += bufferArray;
+      }
 
+      htmlResponse = castHTML(concatResponse);
+      // Check if the figure was found
       if (htmlResponse.empty()) {
         std::cout << RED << "\n    Error 404! Figure NOT found\n" << RESET << std::endl;
       } else if (htmlResponse.find("Illegal request") != std::string::npos) {
@@ -102,11 +100,11 @@ int main(int argc, char* argv[]) {
         figureFoud = true;
         legoParts += getLegoParts(htmlResponse);
         finalResponse += htmlResponse;
-        //std::cout << htmlResponse << std::endl;
       }
-
-      delete client; // Free the memory allocated for the socket
+      
     }
+
+    delete client; // Free the memory allocated for the socket
 
     if (figureFoud) {
       std::cout << formatResponse(finalResponse) << std::endl;
