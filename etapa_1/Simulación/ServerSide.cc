@@ -1,7 +1,7 @@
 #include "ServerSide.h"
 
 // Variables definitions
-std::string protocolRequest = "http://legoFigures/get-";
+//std::string protocolRequest = "http://legoFigures/get-";
 
 // Define LEGO animals
 std::string legoFigures [] = {"giraffe", "elephant", "lion", "monkey", "spiderman", 
@@ -67,12 +67,17 @@ std::map<std::string, std::string> eiffelTower {
   {"upper section", "1x1 bricks"}
 };
 
-
 #define REDTEXT "\033[1;31m"
 #define GREENTEXT "\033[1;32m"
 #define CYANTEXT "\033[1;36m"
 #define RESET "\033[0m"
 
+std::string getFigure(std::string userRequest) {
+  size_t firstDashPos = userRequest.find('-');
+  size_t secondDashPos = userRequest.find('-', firstDashPos + 1);
+  std::string textBetweenDashes = userRequest.substr(firstDashPos + 1, secondDashPos - firstDashPos - 1);
+  return textBetweenDashes;
+}
 void* server(void* data) {
   privateData* pData = (privateData*) data;
   sharedData* sData = pData->sData;
@@ -80,18 +85,14 @@ void* server(void* data) {
   std::string legoFigure = "";
   while (!sData->closeServer) {
     sem_wait(&sData->serverSemaphore);
-    if (validatePartRequest(sData->legoPart)) {
-      legoFigure = sData->userRequest;
-      sData->userRequest = protocolRequest + sData->userRequest;
-
+    if (validatePartRequest(sData->legoPart)) { 
+      legoFigure = getFigure(sData->userRequest);
+    
       if (compareRequest(sData->userRequest)) {
         sData->serverResponse = "";
         sData->closeServer = true;
-        sem_post(&sData->intermediateSemaphore);
         break;
       } else {
-        std::cout << "Server's processing: " << "\033[1;34m" << "\033[4m" << sData->userRequest << "-" << sData->legoPart << "\033[0m" << std::endl;
-
         bool legoFound = false;
         for (const auto& lego : legoFigures) {
           if (legoFigure == lego) {
@@ -101,10 +102,8 @@ void* server(void* data) {
         }
 
         if (legoFound) {
-          
           int legoPiece = 0;
           legoPiece = getLegoPart(sData->legoPart);
-
           sData->serverResponse = getLegoPieces(legoFigure, legoPiece);
         } else {
           setErrorFigureMessage(sData);

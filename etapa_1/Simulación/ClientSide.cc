@@ -31,15 +31,17 @@ void initThreadsData(pthread_t clientThread, pthread_t intermediateThread, pthre
   pthread_create(&serverThread, NULL, server, &serverData);
 
   // Detach client and intermediate threads
-  pthread_detach(clientThread);
-  pthread_detach(intermediateThread);
+  pthread_join(clientThread, NULL);
+  pthread_join(intermediateThread, NULL);
 
   // Wait for the server thread to finish
   pthread_join(serverThread, NULL);
 
+  sem_destroy(&sData->userSemaphore);
+  sem_destroy(&sData->intermediateSemaphore);
+  sem_destroy(&sData->serverSemaphore);
   delete sData;
 }
-
 
 #define REDTEXT "\033[1;31m"
 #define GREENTEXT "\033[1;32m"
@@ -54,15 +56,15 @@ void* userRequest(void* data) {
   std::string legoPart = "";
 
   system("clear");
-  std::cout << MAGENTA <<"Welcome to the LEGO server!" << RESET << std::endl << std::endl;
   do {
+    std::cout << MAGENTA <<"     Welcome to the LEGO server!" << RESET << std::endl << std::endl;
     std::cout << "Enter a request or q to exit: ";
     std::getline(std::cin, userInput);
     sData->userRequest = userInput;
 
     if (sData->userRequest == "q" || sData->userRequest == "Q") {
       sData->closeServer = true;
-      sem_post(&sData->serverSemaphore);
+      sem_post(&sData->intermediateSemaphore);
       break;
     }
 
