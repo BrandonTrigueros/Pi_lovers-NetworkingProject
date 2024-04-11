@@ -112,6 +112,7 @@ void* server(void* data) {
       }
     } else {
       setErrorPartMessage(sData);
+      sem_post(&sData->userSemaphore);
     }
   }
   return nullptr;
