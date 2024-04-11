@@ -24,8 +24,6 @@ void* intermediateServer(void* data) {
       std::cout << CYANTEXT << " - Sending request " << "\033[1;34m" << "\033[4m" << sData->userRequest << RESET <<  CYANTEXT << " to the server - " << RESET << std::endl;
     }
     sem_post(&sData->serverSemaphore);
-    sem_wait(&sData->intermediateSemaphore);
-    sem_post(&sData->userSemaphore);
   }
   
   return nullptr;

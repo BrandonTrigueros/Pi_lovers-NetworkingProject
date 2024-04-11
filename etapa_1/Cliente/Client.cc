@@ -1,6 +1,7 @@
 #include "Client.h"
 
 Client::Client() {
+  this->legoParts = 0;
   this->socketType = 's';
   this->osv4 = "163.178.104.187";
 }

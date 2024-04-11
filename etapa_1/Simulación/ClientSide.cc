@@ -14,7 +14,7 @@ void initThreadsData(pthread_t clientThread, pthread_t intermediateThread, pthre
   sharedData* sData = new sharedData;
   sData->userRequest = "";
   sData->serverResponse = "";
-  sem_init(&sData->userSemaphore, 0, 1);
+  sem_init(&sData->userSemaphore, 0, 0);
   sem_init(&sData->intermediateSemaphore, 0, 0);
   sem_init(&sData->serverSemaphore, 0, 0);
   sData->closeIntermediateServer = false;
@@ -76,7 +76,6 @@ void* userRequest(void* data) {
     sem_post(&sData->intermediateSemaphore);
     sem_wait(&sData->userSemaphore);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(800));
     std::cout <<  CYANTEXT << " - Obtaining the response from the server -" << RESET << std::endl;
     std::cout << sData->serverResponse << std::endl;
 

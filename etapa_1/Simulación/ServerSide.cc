@@ -108,7 +108,7 @@ void* server(void* data) {
         } else {
           setErrorFigureMessage(sData);
         }
-        sem_post(&sData->intermediateSemaphore);
+        sem_post(&sData->userSemaphore);
       }
     } else {
       setErrorPartMessage(sData);
