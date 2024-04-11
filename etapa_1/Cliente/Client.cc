@@ -17,9 +17,11 @@ bool Client::createSocket(int argc, char* argv[]) {
     if (argc > 2) {
       this->clientSocket = new SSLSocket();
       this->clientSocket->Connect(this->osv4, 443); 
+      std::cout << "\n  USING SSL SOCKET";
     } else {
       this->clientSocket = new Socket(this->socketType, false);
       this->clientSocket->Connect(this->osv4, 80); 
+      std::cout << "\n USING TCP SOCKET";
     }
     error = 1;
   } else {
@@ -46,6 +48,7 @@ void Client::run() {
       this->clientSocket->Read(responseArray, MAX_BUFFER_SIZE);
       concatResponse += this->responseArray;
     }
+    
     this->htmlResponse = castHTML(concatResponse);
     verifyResponse(this->htmlResponse);
     
@@ -66,9 +69,9 @@ std::string Client::castHTML(const std::string htmlResponse) {
 void Client::verifyResponse(const std::string htmlResponse) {
   this->figureFound = false;
   if (this->htmlResponse.empty()) {
-    std::cout << RED << "\n    Error 404! Figure NOT found\n" << RESET << std::endl;
+    std::cout << RED << "\n Error 404! Figure NOT found\n" << RESET << std::endl;
   } else if (this->htmlResponse.find("Illegal request") != std::string::npos) {
-    std::cout << RED << "\n    Error 404! Illegal request\n" << RESET << std::endl;
+    std::cout << RED << "\n Error 404! Illegal request\n" << RESET << std::endl;
   } else {
     this->figureFound = true;
     this->legoParts += getLegoParts(htmlResponse);
@@ -93,7 +96,7 @@ std::string Client::formatResponse(std::string htmlResponse) {
 
 void Client::printTitle() {
   std::transform(this->animal.begin(), this->animal.end(), this->animal.begin(), ::toupper);
-  std::cout << CYAN << "\n\tLEGO PIECES FOR " << animal << "\n" << RESET;
+  std::cout << CYAN << "\n   LEGO PIECES FOR " << animal << "\n" << RESET;
   std::transform(this->animal.begin(), this->animal.end(), this->animal.begin(), ::tolower);
 }
 
