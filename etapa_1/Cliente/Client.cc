@@ -55,7 +55,7 @@ void Client::run() {
     
   }
   // Close the connection
-  // delete this->clientSocket;
+  delete this->clientSocket;
 }
 
 std::string Client::castHTML(const std::string htmlResponse) {
