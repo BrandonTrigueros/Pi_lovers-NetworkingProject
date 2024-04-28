@@ -13,7 +13,7 @@ class FileManager {
   public:
     FileManager() = default;
     ~FileManager() = default;
-    void Read( char* buffer, const char* file_path );
+    void Read( std::string* buffer, const char* file_path );
 
 };
 

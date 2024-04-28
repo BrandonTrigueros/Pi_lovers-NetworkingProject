@@ -1,15 +1,5 @@
 #include "Server.h"
 
-/*
-    TODO: 
-    - Create server threads
-    - Read files
-    - Set port
-    - Write response
-    - Accept connections
-    - join threads
-*/ 
-
 void Server::Run() {
   std::thread * worker;
   VSocket * server_socket, * client;
@@ -20,36 +10,58 @@ void Server::Run() {
   server_socket->Bind( PORT );		// Port to access this mirror server
   server_socket->Listen( 5 );		// Set backlog queue to 5 conections
 
-  //while ( true ) {
+  while ( true ) {
     // Wait for a client conection
     client = server_socket->Accept();
     // Create a new thread to handle client request
-    std::cout << "Client connected" << std::endl;
+    std::cout << "New connection" << std::endl;
     worker = new std::thread( task, (void*)client );
-  //}
+  }
   worker->join();
+}
+
+std::string Server::getFigure(std::string userRequest) {
+  size_t first_dash = userRequest.find('-');
+  size_t second_dash = userRequest.find('-', first_dash + 1);
+  std::string figure = userRequest.substr(first_dash + 1, second_dash - first_dash - 1);
+  return figure;
+}
+
+std::string Server::getPiece(std::string userRequest) {
+  size_t first_dash = userRequest.find('-');
+  size_t second_dash = userRequest.find('-', first_dash + 1);
+  std::string piece = userRequest.substr(second_dash + 1, 2);
+  return piece;
 }
 
 void Server::task( void* socket ) {
   char request[ BUFSIZE ];
-  char html_text[ 100000 ];
-  std::string animal_name;
-  std::string animal_part;
+  std::string html_text;
+  std::string http_response;
+  std::string lego_name;
+  std::string lego_part;
   std::string file_path;
   VSocket * client = (VSocket*)socket;
   // Receive request from client
   client->Read( request, BUFSIZE );
-  // TODO: Get animal name from request, by the moment we will use a fixed name
-  // TODO: Get animal part from request, by the moment we will use a fixed part
-  std::cout << request << std::endl;
-  animal_name = "Dragon";
-  animal_part = "01";
-  file_path = "Legos/" + animal_name + animal_part + ".txt";
-  // Read file based on request
+  // Request format http://legoFigures/get-<figura>-<parte>
+  lego_name = getFigure(request);
+  lego_part = getPiece(request);
+  file_path = "Legos/" + lego_name + lego_part + ".html";
+
   FileManager file_manager;
-  file_manager.Read( html_text, file_path.c_str() );
-  // std::cout << html_text << std::endl;
+  std::string legos = "Dragon, Car, House, Person";
+  // TODO: Make a better way to check the lego name
+  // For example: if i put "Drago" it will return the Dragon lego
+  if (legos.find(lego_name) == std::string::npos) {
+    file_manager.Read( &html_text, "Legos/Error404.html" );
+    http_response = "HTTP/1.1 404 Not Found\r\nContent-Length: " + std::to_string(html_text.length()) + "\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
+  } else {
+    file_manager.Read( &html_text, file_path.c_str() );
+    http_response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(html_text.length()) + "\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
+  }
+  client->Write( http_response.c_str() );
   // Write response to client
-  client->Write( html_text );
+  client->Write( html_text.c_str() );
   client->Close();
 }

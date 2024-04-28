@@ -1,16 +1,16 @@
 #include "FileManager.h"
 
-void FileManager::Read( char* buffer, const char* file_path ) {
+void FileManager::Read( std::string* buffer, const char* file_path ) {
   std::ifstream file;
-  char line[ 256 ];
+  std::string line;
   file.open( file_path );
   if ( file.is_open() ) {
-    while ( file.getline( line, 256 ) ) {
-      strcat(buffer, line);
-      strcat(buffer, "\n");
+    while ( std::getline( file, line ) ) {
+      *buffer += line;
+      *buffer += "\n";
     }
     file.close();
-  } else { 
+  } else {
     std::cout << "Error opening file"  << std::endl;
   }
 }
