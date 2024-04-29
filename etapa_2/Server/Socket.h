@@ -1,12 +1,3 @@
-
-/**
- *
- *   UCR-ECCI
- *
- *   Socket class interface
- *
- **/
-
 #ifndef Socket_h
 #define Socket_h
 
@@ -18,7 +9,6 @@
 #include <sys/socket.h>
 
 #include "VSocket.h"
-
 
 class Socket : public VSocket {
 

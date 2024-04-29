@@ -13,16 +13,14 @@ Client::~Client() {
 bool Client::createSocket(int argc, char* argv[]) {
   int error = 0;
   if (analyzeArgs(argc)) {
-    this->animal = argv[1];
+    this->figure = argv[1];
 
     if (argc > 2) {
       this->clientSocket = new SSLSocket();
       this->clientSocket->Connect(this->osv4, 443);
-      std::cout << "\n  USING SSL SOCKET";
     } else {
       this->clientSocket = new Socket(this->socketType, false);
       this->clientSocket->Connect(this->osv4, 1233);
-      std::cout << "\n USING TCP SOCKET";
     }
     error = 1;
   } else {
@@ -39,36 +37,52 @@ bool Client::analyzeArgs(int argc) {
 void Client::run() {
   // Create an SSL socket and connect to the server
   for (int requestNumber = 1; requestNumber < 2; requestNumber++) {
-    // request = "GET /lego/list.php?figure=" + this->animal + "&part=" + ((char)(requestNumber + 48)) +  " HTTP/1.1\r\nhost: redes.ecci\r\n\r\n";
-    request = "GET /legoFigures/get-Dog-01 HTTP/1.1";
+    // Request format http://legoFigures/get-<figura>-<parte>
+    request = "http://legoFigures/get-" + this->figure + "-0" + std::to_string(requestNumber);
     this->clientSocket->Write(request.c_str());
     // Reset the buffers
     concatResponse = "";
     memset(responseArray, 0, MAX_BUFFER_SIZE);
     // Read
-    while (concatResponse.find("</HTML>") == std::string::npos && concatResponse.find("</html>") == std::string::npos){
+    while (concatResponse.find("</HTML>") == std::string::npos){
       this->clientSocket->Read(responseArray, MAX_BUFFER_SIZE);
       concatResponse += this->responseArray;
-      std::cout << concatResponse;
     }
 
     this->htmlResponse = castHTML(concatResponse);
     verifyResponse(this->htmlResponse);
-
   }
   // Close the connection
   delete this->clientSocket;
 }
 
-std::string Client::castHTML(const std::string htmlResponse) {
-  std::regex tagRegex("\\s{2,}|<[^>]+>|\\n"); // Regular expression to match HTML tags
-  std::string fixedHTML = std::regex_replace(htmlResponse, tagRegex, ""); // Replaces <div> ..... </diV with ""
-  // TODO: Fix this, only works with the chiki's server
-  // fixedHTML.erase(0, 537);
-  fixedHTML = std::regex_replace(fixedHTML, std::regex("   "), ""); // Replaces "  " with "\n"
-  fixedHTML = std::regex_replace(fixedHTML, std::regex("  "), "\n"); // Replaces "  " with "\n"
-  return fixedHTML;
+// std::string Client::castHTML(const std::string htmlResponse) {
+//   std::regex tagRegex("\\s{2,}|<[^>]+>|\\n"); // Regular expression to match HTML tags
+//   std::string fixedHTML = std::regex_replace(htmlResponse, tagRegex, ""); // Replaces <div> ..... </diV with ""
+//   // TODO: Fix this, only works with chiki's server
+//   // fixedHTML.erase(0, 537);
+//   fixedHTML = std::regex_replace(fixedHTML, std::regex("   "), ""); // Replaces "  " with "\n"
+//   fixedHTML = std::regex_replace(fixedHTML, std::regex("  "), "\n"); // Replaces "  " with "\n"
+//   return fixedHTML;
+// }
+
+
+std::string Client::castHTML(const std::string& htmlResponse) {
+    // Regular expression to match HTML tags and newlines
+    std::regex tagRegex("(<[^>]+>)|\n");
+    // Remove HTML tags and newlines from the HTML response
+    std::string fixedHTML = std::regex_replace(htmlResponse, tagRegex, "");
+    // Replace multiple spaces with a single space
+    fixedHTML = std::regex_replace(fixedHTML, std::regex("\\s+"), " ");
+    // Trim leading and trailing whitespaces
+    fixedHTML = std::regex_replace(fixedHTML, std::regex("^\\s+|\\s+$"), "");
+    return fixedHTML;
 }
+
+std::string Client::castHTML(const std::string& htmlResponse) {
+  
+}
+
 
 void Client::verifyResponse(const std::string htmlResponse) {
   this->figureFound = false;
@@ -83,7 +97,7 @@ void Client::verifyResponse(const std::string htmlResponse) {
   }
 }
 
-// TODO: Only works with the chiki's server
+// TODO: Only works with chiki's server
 int Client::getLegoParts(std::string htmlResponse) {
   std::string::size_type keywordPosition = 0;
   keywordPosition = htmlResponse.find("figura");
@@ -91,7 +105,7 @@ int Client::getLegoParts(std::string htmlResponse) {
   return legoParts;
 }
 
-// TODO: Only works with the chiki's server
+// TODO: Only works with chiki's server
 std::string Client::formatResponse(std::string htmlResponse) {
   std::regex totalRegex("Total de piezas para armar esta figura\\d+");
   htmlResponse = std::regex_replace(htmlResponse, totalRegex, std::string(""));
@@ -101,15 +115,15 @@ std::string Client::formatResponse(std::string htmlResponse) {
 }
 
 void Client::printTitle() {
-  std::transform(this->animal.begin(), this->animal.end(), this->animal.begin(), ::toupper);
-  std::cout << CYAN << "\n   LEGO PIECES FOR " << animal << "\n" << RESET;
-  std::transform(this->animal.begin(), this->animal.end(), this->animal.begin(), ::tolower);
+  std::string legoTitle = this->figure;
+  std::transform(legoTitle.begin(), legoTitle.end(), legoTitle.begin(), ::toupper);
+  std::cout << CYAN << "\n   LEGO PIECES FOR " << figure << "\n" << RESET;
 }
 
 void Client::printResponse() {
   if (this->figureFound) {
     std::cout << formatResponse(finalResponse) << std::endl;
-    // TODO: Only works with the chiki's server
+    // TODO: Only works with chiki's server
     // std::cout << GREEN << "  Piezas necesarias para armar la figura: " << legoParts << "\n" << RESET;
   }
 }

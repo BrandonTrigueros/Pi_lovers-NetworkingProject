@@ -42,9 +42,7 @@ void VSocket::InitVSocket( char t, bool IPv6 ){
   *
  **/
 void VSocket::InitVSocket( int id ){
-
   this->idSocket = id;
-
 }
 
 
@@ -53,9 +51,7 @@ void VSocket::InitVSocket( int id ){
   *
  **/
 VSocket::~VSocket() {
-
   this->Close();
-
 }
 
 
@@ -66,11 +62,9 @@ VSocket::~VSocket() {
  **/
 void VSocket::Close(){
   int st;
-
   if ( -1 == st ) {
     throw std::runtime_error( "Socket::Close()" );
   }
-
 }
 
 

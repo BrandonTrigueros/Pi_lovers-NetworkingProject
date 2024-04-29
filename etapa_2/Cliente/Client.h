@@ -26,7 +26,7 @@ class Client {
     char socketType;
     char responseArray[MAX_BUFFER_SIZE]; 
     std::string concatResponse;
-    std::string animal; 
+    std::string figure; 
     std::string request; 
     std::string htmlResponse; 
     std::string finalResponse;
@@ -36,7 +36,7 @@ class Client {
 
     bool analyzeArgs(int);
     
-    std::string castHTML(const std::string);
+    std::string castHTML(const std::string&);
     void verifyResponse(const std::string);
 
     int getLegoParts(std::string);
