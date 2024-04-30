@@ -60,8 +60,9 @@ std::string Client::castHTML(const std::string& htmlResponse) {
   std::smatch match;
   std::string fixedHtml;
   std::regex tdRegex(
-      "<TR>\\s*<TD.*?>(.*?)<\\/TD>\\s*<TD.*?>(?:\\s*<H2>)?(.*?)(?:<\\/"
-      "H2>\\s*)?<\\/TD>\\s*<\\/TR>");
+      "<TR>\\s*<TD.*?>(.*?)<\\/TD>\\s*<TD.*?>(?:\\s*<H[1-6]>)?(.*?)(?:<\\/"
+      "H[1-6]>\\s*)?<\\/TD>\\s*<\\/TR>",
+      std::regex_constants::icase);
 
   auto htmlBegin = htmlResponse.cbegin();
   auto htmlEnd = htmlResponse.cend();
