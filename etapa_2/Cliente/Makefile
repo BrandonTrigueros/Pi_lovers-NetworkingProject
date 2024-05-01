@@ -26,27 +26,25 @@ clean:
 
 
 test1:
-	./main.out giraffe 1
+	./main.out BobOmb
 
 test2:
-	./main.out lion 2
-
+	./main.out Car
+  
 test3:
-	./main.out dragon 3 
+	./main.out DogHouse
 
 test4:
-	./main.out camel 4 
+	./main.out Dragon
 
 test5:
-	./main.out shark 5
+	./main.out Jovani
 
 test6:
-	./main.out roadrunner
+	./main.out SantaClaus
 
 test7:
-	./main.out ape
+	./main.out TieFighter
 
-test8:
-	./main.out clownfish
 
-test: test1 test2 test3 test4 test5 test6 test7 test8
+test: test1 test2 test3 test4 test5 test6 test7

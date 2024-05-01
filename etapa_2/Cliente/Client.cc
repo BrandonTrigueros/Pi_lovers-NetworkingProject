@@ -10,32 +10,22 @@ Client::~Client() {
   // delete this->clientSocket;
 }
 
-bool Client::createSocket(int argc, char* argv[]) {
-  int error = 0;
-  if (analyzeArgs(argc)) {
+bool Client::analyzeArgs(int argc, char* argv[]) {
+  int success = 0;
+  if (argc > 1) {
     this->figure = argv[1];
-
-    if (argc > 2) {
-      this->clientSocket = new SSLSocket();
-      this->clientSocket->Connect(this->osv4, 443);
-    } else {
-      this->clientSocket = new Socket(this->socketType, false);
-      this->clientSocket->Connect(this->osv4, 1233);
-    }
-    error = 1;
+    success = 1;
   } else {
-    std::cout << RED << "\n\tUsage: ./main.out <animal> \n"
-              << RESET << std::endl;
-    error = 0;
+    std::cout << RED << "\n\tUsage: ./main.out <animal> \n" << RESET << std::endl;
   }
-  return error;
+  return success;
 }
-
-bool Client::analyzeArgs(int argc) { return argc > 1; }
 
 void Client::run() {
   // Create an SSL socket and connect to the server
-  for (int requestNumber = 1; requestNumber < 2; requestNumber++) {
+  for (int requestNumber = 1; requestNumber < 3; requestNumber++) {
+    this->clientSocket = new Socket(this->socketType, false);
+    this->clientSocket->Connect(this->osv4, 1233);
     // Request format http://legoFigures/get-<figura>-<parte>
     request = "http://legoFigures/get-" + this->figure + "-0"
         + std::to_string(requestNumber);
@@ -48,12 +38,11 @@ void Client::run() {
       this->clientSocket->Read(responseArray, MAX_BUFFER_SIZE);
       concatResponse += this->responseArray;
     }
-
     this->htmlResponse = castHTML(concatResponse);
     verifyResponse(this->htmlResponse);
+    // Close the connection
+    delete this->clientSocket;
   }
-  // Close the connection
-  delete this->clientSocket;
 }
 
 std::string Client::castHTML(const std::string& htmlResponse) {
@@ -82,23 +71,21 @@ void Client::verifyResponse(const std::string htmlResponse) {
     std::cout << RED << "\n Error 404! Illegal request\n" << RESET << std::endl;
   } else {
     this->figureFound = true;
-    // this->legoParts += getLegoParts(htmlResponse);
+    this->legoParts += getLegoParts(htmlResponse);
     this->finalResponse += htmlResponse;
   }
 }
 
-// TODO: Only works with chiki's server
 int Client::getLegoParts(std::string htmlResponse) {
   std::string::size_type keywordPosition = 0;
-  keywordPosition = htmlResponse.find("figura");
+  keywordPosition = htmlResponse.find("piezas");
   int legoParts = std::stoi(htmlResponse.substr(keywordPosition + 6));
   return legoParts;
 }
 
-// TODO: Only works with chiki's server
 std::string Client::formatResponse(std::string htmlResponse) {
-  std::regex totalRegex("Total de piezas para armar esta figura\\d+");
-  htmlResponse = std::regex_replace(htmlResponse, totalRegex, std::string(""));
+  std::regex piecesRegex("Total de piezas\\s\\d+");
+  htmlResponse = std::regex_replace(htmlResponse, piecesRegex, std::string(""));
   std::regex multipleNewlinesRegex("\\n{2,}");
   htmlResponse = std::regex_replace(htmlResponse, multipleNewlinesRegex, "\n");
   return htmlResponse;
@@ -108,14 +95,13 @@ void Client::printTitle() {
   std::string legoTitle = this->figure;
   std::transform(
       legoTitle.begin(), legoTitle.end(), legoTitle.begin(), ::toupper);
-  std::cout << CYAN << "\n   LEGO PIECES FOR " << figure << "\n" << RESET;
+  std::cout << CYAN << "\n       LEGO PIECES FOR " << figure << "\n" << RESET;
 }
 
 void Client::printResponse() {
   if (this->figureFound) {
     std::cout << formatResponse(finalResponse) << std::endl;
-    // TODO: Only works with chiki's server
-    // std::cout << GREEN << "  Piezas necesarias para armar la figura: " <<
-    // legoParts << "\n" << RESET;
+    std::cout << GREEN << "  Piezas necesarias para armar la figura: " <<
+    legoParts << "\n" << RESET;
   }
 }

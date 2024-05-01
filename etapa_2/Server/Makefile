@@ -22,8 +22,6 @@ $(info $$TARGETS = $(TARGETS))
 main.out:	main.o VSocket.o Socket.o Server.o FileManager.o
 	$(CXX) main.o VSocket.o Socket.o Server.o FileManager.o $(LDFLAGS) -o $@
 
-MirrorClientTest.out:	MirrorClientTest.o VSocket.o Socket.o 
-	$(CXX) MirrorClientTest.o VSocket.o Socket.o $(LDFLAGS) -o $@
-	
 clean:
 	rm -f *.o *.out
+

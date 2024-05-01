@@ -34,7 +34,6 @@ class Client {
     bool figureFound;
     const char* osv4;
 
-    bool analyzeArgs(int);
     
     std::string castHTML(const std::string&);
     void verifyResponse(const std::string);
@@ -46,8 +45,8 @@ class Client {
   public:
     Client();
     ~Client();
-    bool createSocket(int, char*[]);
     void run();
+    bool analyzeArgs(int, char* []);
     void printTitle();
     void printResponse();
 }; 

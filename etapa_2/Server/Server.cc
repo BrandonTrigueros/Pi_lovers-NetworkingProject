@@ -41,10 +41,7 @@ void Server::task(void* socket) {
   std::string lego_part;
   std::string file_path;
   VSocket* client = (VSocket*)socket;
-  // Receive request from client
   client->Read(request, BUFSIZE);
-  std::cout << "Request received: " << request
-            << std::endl;  // ToDo: Delete this line
   // Request format http://legoFigures/get-<figura>-<parte>
   lego_name = getFigure(request);
   lego_part = getPiece(request);
@@ -52,10 +49,10 @@ void Server::task(void* socket) {
 
   FileManager file_manager;
   std::string legos[]
-      = { "Dragon", "Car", "DogHouse", "TieFighter", "BobOmb", "SantaClaus" };
+      = { "Dragon", "Car", "DogHouse", "TieFighter", "BobOmb", "SantaClaus", "Jovani"};
 
   bool figure_found = false;
-  for (int index = 0; index < legos->size(); index++) {
+  for (int index = 0; index <= legos->size(); index++) {
     if (legos[index] == lego_name) {
       figure_found = true;
       break;
@@ -75,5 +72,6 @@ void Server::task(void* socket) {
   }
   client->Write(http_response.c_str());
   client->Write(html_text.c_str());
+
   client->Close();
 }
