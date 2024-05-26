@@ -29,6 +29,7 @@
 #include <synch.h>
 #include <unistd.h>
 #include <iostream>
+#include <sys/socket.h> 
 
 Semaphore *console_sem = new Semaphore("Console", 1);
 
@@ -82,8 +83,7 @@ void NachOS_Create()
 /*
  *  System call interface: OpenFileId Open( char * )
  */
-void NachOS_Open()
-{ // System call 5
+void NachOS_Open() { // System call 5 
 }
 
 /*
@@ -329,8 +329,17 @@ void NachOS_CondBroadcast()
 /*
  *  System call interface: Socket_t Socket( int, int )
  */
-void NachOS_Socket()
-{ // System call 30
+void NachOS_Socket() { // System call 30
+  int family = machine->ReadRegister(4); 
+  int type = machine->ReadRegister(5);
+  family == AF_INET_NachOS ? family = AF_INET : AF_INET6;
+  type == SOCK_STREAM_NachOS ? type =  SOCK_STREAM : SOCK_DGRAM;
+
+  int unixID = socket(family, type, 0);
+  int fileDescriptor = currentThread->openFilesTable->Open(unixID);
+  
+  machine->WriteRegister(2, fileDescriptor);
+  returnFromSystemCall();
 }
 
 /*
