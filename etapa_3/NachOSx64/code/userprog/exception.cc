@@ -31,6 +31,7 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <iostream>
 
 Semaphore *console_sem = new Semaphore("Console", 1);
 
@@ -56,8 +57,9 @@ void NachOS_Halt()
 /*
  *  System call interface: void Exit( int )
  */
-void NachOS_Exit()
-{ // System call 1
+void NachOS_Exit() { // System call 1
+  currentThread->Finish();
+  returnFromSystemCall();
 }
 
 /*
@@ -93,18 +95,16 @@ void NachOS_Open() { // System call 5
 void NachOS_Write()
 { // System call 6
   char *buffer = NULL;
+  int st;
   int name = machine->ReadRegister(4); // Read address of buffer
   int size = machine->ReadRegister(5); // Read size to write
+  std::cout << "Size Write: " << size << std::endl;
+
   buffer = new char[size + 1];
   // buffer = Read data from address given by user;
   for (int i = 0; i < size; i++)
   {
     machine->ReadMem(name + i, 1, (int *)&buffer[i]);
-    if (buffer[i] == '\n')
-    {
-      buffer[i + 1] = '\0';
-      break;
-    }
   }
   OpenFileId descriptor = machine->ReadRegister(6); // Read file descriptor
 
@@ -129,12 +129,14 @@ void NachOS_Write()
       // Get the unix handle from our table for open files
       int unixHandle = currentThread->openFilesTable->getUnixHandle(descriptor);
       // Do the write to the already opened Unix file
-      write(unixHandle, buffer, size);
-      // Return the number of chars written to user, via r2
-      machine->WriteRegister(2, size);
-    }
-    else
-    {
+      st = write(unixHandle, buffer, size);
+      if (st == -1){
+        machine->WriteRegister(2, -1);
+      } else {
+        // Return the number of chars written to user, via r2
+        machine->WriteRegister(2, size);
+      }
+    } else {
       machine->WriteRegister(2, -1);
     }
     break;
@@ -155,7 +157,7 @@ void NachOS_Read() { // System call 7
   char *buffer = NULL;
   int name = machine->ReadRegister(4); // Read address of buffer
   int size = machine->ReadRegister(5); // Read size to write
-
+  std::cout << "Size: " << size << std::endl;
   buffer = new char[size + 1];
   OpenFileId fileDescriptor = machine->ReadRegister(6); // Read file descriptor
 
@@ -218,8 +220,17 @@ void NachOS_Read() { // System call 7
 /*
  *  System call interface: void Close( OpenFileId )
  */
-void NachOS_Close()
-{ // System call 8
+void NachOS_Close() { // System call 8
+  OpenFileId descriptor = machine->ReadRegister( 4 );	// Read file descriptor
+  int unixHandle = currentThread->openFilesTable->Close(descriptor);
+  if (unixHandle == -1) {
+    machine->WriteRegister(2, -1);
+  } else {
+    // Returns 0 on succes
+    int returnValue = close(unixHandle);
+    machine->WriteRegister(2, returnValue);
+  }
+  returnFromSystemCall();
 }
 
 /*

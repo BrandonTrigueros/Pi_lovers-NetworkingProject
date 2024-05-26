@@ -79,7 +79,6 @@ class Thread {
     HostMemoryAddress machineState[MachineStateSize];	// all registers except for stackTop
 
   public:
-    NachosOpenFilesTable* openFilesTable;	// The open files table for this thread
     Thread(const char* debugName);	// initialize a Thread 
     ~Thread(); 				// deallocate a Thread
 					// NOTE -- thread being deleted
@@ -126,6 +125,7 @@ class Thread {
     void RestoreUserState();		// restore user-level register state
 
     AddrSpace *space;			// User code this thread is running.
+    NachosOpenFilesTable* openFilesTable;	// The open files table for this thread
 #endif
 };
 
