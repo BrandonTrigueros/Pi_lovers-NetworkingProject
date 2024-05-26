@@ -29,7 +29,8 @@
 #include <synch.h>
 #include <unistd.h>
 #include <iostream>
-#include <sys/socket.h> 
+#include <sys/socket.h>
+#include <arpa/inet.h>
 
 Semaphore *console_sem = new Semaphore("Console", 1);
 
@@ -345,8 +346,40 @@ void NachOS_Socket() { // System call 30
 /*
  *  System call interface: Socket_t Connect( char *, int )
  */
-void NachOS_Connect()
-{ // System call 31
+void NachOS_Connect() { // System call 31
+    char* buffer = new char[128];
+    int socketID = machine->ReadRegister(4);
+    int socketIP = machine->ReadRegister(5);
+    int socketPort = machine->ReadRegister(6);
+
+    for (int i = 0; i < 128; i++) {
+      machine->ReadMem(socketIP + i, 1, (int*)&buffer[i]);
+      if (buffer[i] == '\0') {
+          break;
+      }
+    }
+
+    int socketDescriptor = currentThread->openFilesTable->getUnixHandle(socketID);
+
+    struct sockaddr_in hostAddress;
+    memset((char*) &hostAddress, 0, sizeof(hostAddress));
+    hostAddress.sin_family = AF_INET;
+    int operationResult;
+    operationResult = inet_pton(AF_INET, buffer, &hostAddress.sin_addr);
+    if ( -1 == operationResult ) {
+      machine->WriteRegister(2, -1);
+    }
+    hostAddress.sin_port = htons(socketPort);
+
+    operationResult = connect(socketDescriptor, (sockaddr*) &hostAddress, sizeof(hostAddress));
+    if ( operationResult == - 1) {
+      machine->WriteRegister(2, -1);
+    } else {
+      machine->WriteRegister(2, operationResult);
+    }
+
+    delete[] buffer;
+    returnFromSystemCall();
 }
 
 /*

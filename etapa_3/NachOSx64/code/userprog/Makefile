@@ -943,7 +943,9 @@ exception.o: ../userprog/exception.cc /usr/include/stdc-predef.h \
  /usr/include/asm/posix_types_64.h /usr/include/asm-generic/posix_types.h \
  /usr/include/asm/bitsperlong.h /usr/include/asm-generic/bitsperlong.h \
  /usr/include/asm/sockios.h /usr/include/asm-generic/sockios.h \
- /usr/include/bits/types/struct_osockaddr.h
+ /usr/include/bits/types/struct_osockaddr.h /usr/include/arpa/inet.h \
+ /usr/include/netinet/in.h /usr/include/bits/stdint-uintn.h \
+ /usr/include/bits/in.h
 progtest.o: ../userprog/progtest.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/system.h ../threads/copyright.h \
  ../machine/interrupt.h ../threads/list.h ../threads/utility.h \
