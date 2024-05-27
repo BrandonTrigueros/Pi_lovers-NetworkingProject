@@ -98,7 +98,6 @@ void NachOS_Write()
   int st;
   int name = machine->ReadRegister(4); // Read address of buffer
   int size = machine->ReadRegister(5); // Read size to write
-  std::cout << "Size Write: " << size << std::endl;
 
   buffer = new char[size + 1];
   // buffer = Read data from address given by user;
@@ -157,7 +156,6 @@ void NachOS_Read() { // System call 7
   char *buffer = NULL;
   int name = machine->ReadRegister(4); // Read address of buffer
   int size = machine->ReadRegister(5); // Read size to write
-  std::cout << "Size: " << size << std::endl;
   buffer = new char[size + 1];
   OpenFileId fileDescriptor = machine->ReadRegister(6); // Read file descriptor
 

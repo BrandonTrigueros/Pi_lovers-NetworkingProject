@@ -67,6 +67,7 @@ void Server::task(void* socket) {
   VSocket* client = (VSocket*)socket;
   client->Read(request, BUFSIZE);
   // Request format http://legoFigures/get-<figura>-<parte>
+  std::cout << request << std::endl;
   lego_name = getFigure(request);
   lego_part = getPiece(request);
   file_path = "Legos/" + lego_name + lego_part + ".html";
@@ -87,18 +88,20 @@ void Server::task(void* socket) {
     file_manager.Read(&html_text, file_path.c_str());
     if (isNachOS(std::string(request))) { 
       html_text = castHTML(html_text);
+    } else {
+      http_response = "HTTP/1.1 200 OK\r\nContent-Length: "
+        + std::to_string(html_text.length())
+        + "\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
     }
-    http_response = "HTTP/1.1 200 OK\r\nContent-Length: "
-      + std::to_string(html_text.length())
-      + "\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
   } else {
     file_manager.Read(&html_text, "Legos/Error404.html");
     if (isNachOS(std::string(request))) {
       html_text = "Error 404!\n\tFigure NOT found!";
+    } else {
+      http_response = "HTTP/1.1 404 Not Found\r\nContent-Length: "
+        + std::to_string(html_text.length())
+        + "\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
     }
-    http_response = "HTTP/1.1 404 Not Found\r\nContent-Length: "
-      + std::to_string(html_text.length())
-      + "\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
   }
   
   client->Write(http_response.c_str());
