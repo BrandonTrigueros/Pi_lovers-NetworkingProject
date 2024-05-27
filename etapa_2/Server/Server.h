@@ -7,25 +7,21 @@
 #include <thread>
 #include <unistd.h>
 #include <algorithm> // transform
-#include <string>
-#include <regex>
 
 #define PORT 1233
 #define BUFSIZE 512
-
 class Server {
 
-public:
-  Server() = default;
-  ~Server() = default;
-  void Run();
-
-private:
-  static void task(void *data);
+  public:
+    Server() = default;
+    ~Server() = default;
+    void Run( );
+  private:
+  static void task( void * data );
   static std::string getFigure(std::string userRequest);
   static std::string getPiece(std::string userRequest);
-  static bool isNachOS(std::string);
-  static std::string castHTML(const std::string&);
+  static bool isNachOS(std::string); 
+
 };
 
 #endif

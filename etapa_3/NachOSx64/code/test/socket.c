@@ -2,13 +2,13 @@
 
 int main() {
   int id;
-  char a[1024];
-  char * request = (char *) "GET /lego/list.php?figure=giraffe HTTP/1.1\r\nhost: redes.ecci\r\n\r\n";
+  char a[512];
+  char * request = (char *) "NachOS legoFigures/get-Dragon-01";
 
   id = Socket(AF_INET_NachOS, SOCK_STREAM_NachOS);
-  Connect(id, "163.178.104.187", 80);
-  Write(request, strlen( request ), id);
-  Read(a, 1024, id);
-  Write(a, 1024, 1);
+  Connect(id, "127.0.0.0", 1233);
+  Write(request, 512, id);
+  Read(a, 512, id);
+  Write(a, 512, 1);
   Close(id);
 }
