@@ -25,6 +25,7 @@ private:
   static std::string getFigure(std::string userRequest);
   static std::string getPiece(std::string userRequest);
   static bool isNachOS(std::string);
+  static int getNumParts(std::string htmlResponse);
   static std::string castHTML(const std::string&);
 };
 

@@ -40,6 +40,13 @@ bool Server::isNachOS(std::string userRequest) {
   return false;
 }
 
+int Server::getNumParts(std::string htmlResponse) {
+  std::string::size_type keywordPosition = 0;
+  keywordPosition = htmlResponse.find("piezas");
+  int legoParts = std::stoi(htmlResponse.substr(keywordPosition + 6));
+  return legoParts;
+}
+
 std::string Server::castHTML(const std::string& htmlResponse) {
   std::smatch match;
   std::string fixedHtml;
@@ -62,15 +69,12 @@ void Server::task(void* socket) {
   std::string html_text;
   std::string http_response;
   std::string lego_name;
-  std::string lego_part;
   std::string file_path;
   VSocket* client = (VSocket*)socket;
   client->Read(request, BUFSIZE);
   // Request format http://legoFigures/get-<figura>-<parte>
   std::cout << request << std::endl;
   lego_name = getFigure(request);
-  lego_part = getPiece(request);
-  file_path = "Legos/" + lego_name + lego_part + ".html";
 
   FileManager file_manager;
   std::string legos[]
@@ -85,10 +89,31 @@ void Server::task(void* socket) {
   }
 
   if (figure_found) {
-    file_manager.Read(&html_text, file_path.c_str());
     if (isNachOS(std::string(request))) { 
+      file_path = "Legos/" + lego_name + "01.html";
+      file_manager.Read(&html_text, file_path.c_str());
       html_text = castHTML(html_text);
+      int total_parts = getNumParts(html_text);
+      size_t last_newline = html_text.find_last_of('\n');
+      html_text = html_text.substr(0, last_newline);
+      last_newline = html_text.find_last_of('\n');
+      html_text = html_text.substr(0, last_newline);
+
+      //Parte 2
+      file_path = "Legos/" + lego_name + "02.html";
+      std::string html_text2;
+      file_manager.Read(&html_text2, file_path.c_str());
+      html_text2 = castHTML(html_text2);
+      total_parts += getNumParts(html_text2);
+      last_newline = html_text2.find_last_of(' ');
+      html_text2 = html_text2.substr(0, last_newline + 8);
+      html_text2 += std::to_string(total_parts);
+      // HTML final
+      html_text += "\n" + html_text2 + "\n";
     } else {
+      std::string lego_part = getPiece(request);
+      file_path = "Legos/" + lego_name + lego_part + ".html";
+      file_manager.Read(&html_text, file_path.c_str());
       http_response = "HTTP/1.1 200 OK\r\nContent-Length: "
         + std::to_string(html_text.length())
         + "\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
