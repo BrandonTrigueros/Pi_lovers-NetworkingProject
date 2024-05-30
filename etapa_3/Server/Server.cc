@@ -109,7 +109,11 @@ void Server::task(void* socket) {
       html_text2 = html_text2.substr(0, last_newline + 8);
       html_text2 += std::to_string(total_parts);
       // HTML final
+      std::string HTMLFinal = "Piezas para formar la figura ";
+      HTMLFinal += lego_name + "\n";
       html_text += "\n" + html_text2 + "\n";
+      HTMLFinal += html_text;
+      html_text = HTMLFinal;
     } else {
       std::string lego_part = getPiece(request);
       file_path = "Legos/" + lego_name + lego_part + ".html";

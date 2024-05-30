@@ -3,7 +3,7 @@
 int main() {
   int id;
   char buffer[512];
-  char * request = (char *) "NachOS legoFigures/get-DogHouse";
+  char * request = (char *) "NachOS legoFigures/get-BobOmb";
 
   id = Socket(AF_INET_NachOS, SOCK_STREAM_NachOS);
   Connect(id, "127.0.0.0", 1233);
