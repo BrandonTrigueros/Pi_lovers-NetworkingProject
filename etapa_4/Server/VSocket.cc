@@ -179,15 +179,13 @@ int VSocket::Bind( int port ) {
  **/
 int VSocket::DoAccept(){
   struct sockaddr_in address;
-  socklen_t address_len;
+  socklen_t address_len;std::cout << "ID: " << this->idSocket << std::endl;
   int st = accept(this->idSocket, (sockaddr *)&address, &address_len);
   
   if ( -1 == st ) {
     throw std::runtime_error( "VSocket::DoAccept()" );
   }
-
   return st;
-
 }
 
 
@@ -229,9 +227,15 @@ int VSocket::Shutdown( int mode ) {
   *
  **/
 size_t VSocket::sendTo( const void * buffer, size_t size, void * addr ) {
-  return 0;
-}
+   // sendto -> send a message on a socket
+   int st = sendto(this->idSocket, buffer, size, 0, (sockaddr *)addr, sizeof(*((sockaddr*)addr)));
 
+   if ( -1 == st ) {
+      throw( std::runtime_error( "VSocket::sendTo()" ));
+   }
+
+   return st;
+}
 
 /**
   *  recvFrom method
@@ -246,5 +250,14 @@ size_t VSocket::sendTo( const void * buffer, size_t size, void * addr ) {
   *
  **/
 size_t VSocket::recvFrom( void * buffer, size_t size, void * addr ) {
-  return 0;
+   // recvfrom -> places the received message into the buffer buf
+   socklen_t addrlen = sizeof(*((sockaddr*)addr));
+   int st = recvfrom(this->idSocket, buffer, size, 0, (sockaddr *)addr, &addrlen);
+
+   if ( -1 == st ) {
+      throw( std::runtime_error( "VSocket::recvFrom()" ));
+   }
+
+   return st;
 }
+

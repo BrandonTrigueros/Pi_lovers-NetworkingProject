@@ -148,6 +148,7 @@ Socket * Socket::Accept(){
   Socket * other;
 
   id = this->DoAccept();
+  std::cout << "ID" << this->idSocket << std::endl;
 
   other = new Socket( id );
 

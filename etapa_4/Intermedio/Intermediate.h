@@ -4,6 +4,12 @@
 #include <map>
 #include <string>
 #include "VSocket.h"
+#include "Socket.h"
+#include <arpa/inet.h>
+#include <string.h>
+
+#define PORT 1233
+#define MAX 512
 
 class Intermediate {
 

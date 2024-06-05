@@ -18,6 +18,7 @@
 #define Socket_h
 
 #include "VSocket.h"
+#include <iostream>
 
 class Socket : public VSocket {
 

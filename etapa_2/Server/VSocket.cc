@@ -180,6 +180,7 @@ int VSocket::Bind( int port ) {
 int VSocket::DoAccept(){
   struct sockaddr_in address;
   socklen_t address_len;
+  
   int st = accept(this->idSocket, (sockaddr *)&address, &address_len);
   
   if ( -1 == st ) {

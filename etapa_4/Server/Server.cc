@@ -1,21 +1,48 @@
 #include "Server.h"
 
 void Server::Run() {
-  std::thread* worker;
-  VSocket *server_socket, *client;
-  std::cout << "Server running" << std::endl;  // ToDo: Delete this line
-  server_socket = new Socket('s');
 
-  server_socket->Bind(PORT);  // Port to access this mirror server
-  server_socket->Listen(5);  // Set backlog queue to 5 conections
+  std::cout << "Server running" << std::endl;
+
+  std::thread intermediate_listener(&Server::listenIntermediates, this);
+  intermediate_listener.join();
+
+  // std::thread* worker;
+  // VSocket *server_socket, *client;
+  // server_socket = new Socket('s');
+  // server_socket->Bind(PORT);  // Port to access this mirror server
+  // server_socket->Listen(5);  // Set backlog queue to 5 conections
+  // VSocket *message_socket = new Socket('d', false);
+  // message_socket->Bind(PORT);
+  
+  // while (true) {
+  // listenIntermediates();
+  // Wait for a client conection
+  //  client = server_socket->Accept();
+  // Create a new thread to handle client request
+  //   worker = new std::thread(task, (void*)client);
+  // }
+  
+  
+  
+  
+  //worker->join();
+}
+
+void Server::listenIntermediates() {
+  struct sockaddr server_info;
+  VSocket *intermediate = new Socket('d', false);
+  intermediate->Bind(PORT);
+  char buffer[512];
+  char *message = (char *) "Intermediate server connected"; 
+  memset(&server_info, 0, sizeof(server_info));
 
   while (true) {
-    // Wait for a client conection
-    client = server_socket->Accept();
-    // Create a new thread to handle client request
-    worker = new std::thread(task, (void*)client);
+    intermediate->recvFrom((void*) buffer, BUFSIZE, (void*)&server_info);
+    std::cout << "Received data: " << buffer << std::endl; // ToDo: comment this line
+    intermediate->sendTo((void*) message, strlen(message), (void*)&server_info);
   }
-  worker->join();
+  intermediate->Close();
 }
 
 std::string Server::getFigure(std::string userRequest) {
@@ -137,3 +164,4 @@ void Server::task(void* socket) {
   client->Write(html_text.c_str());
   client->Close();
 }
+

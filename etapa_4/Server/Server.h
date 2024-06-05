@@ -9,6 +9,7 @@
 #include <algorithm> // transform
 #include <string>
 #include <regex>
+#include "VSocket.h"
 
 #define PORT 1233
 #define BUFSIZE 512
@@ -27,6 +28,7 @@ private:
   static bool isNachOS(std::string);
   static int getNumParts(std::string htmlResponse);
   static std::string castHTML(const std::string&);
+  void listenIntermediates();
 };
 
 #endif

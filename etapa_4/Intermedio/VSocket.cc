@@ -202,9 +202,7 @@ size_t VSocket::sendTo( const void * buffer, size_t size, void * addr ) {
    }
 
    return st;
-
 }
-
 
 /**
   *  recvFrom method

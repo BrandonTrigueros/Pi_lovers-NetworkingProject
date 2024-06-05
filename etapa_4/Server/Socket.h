@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 
 #include "VSocket.h"
+#include <iostream>
 
 class Socket : public VSocket {
 

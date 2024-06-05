@@ -1,50 +1,26 @@
-CC  := gcc
-CXX := g++
-CFLAGS := -g -c
-CXXFLAGS := -g -c 
-LDFLAGS := -lssl -lcrypto
-DEPS := Socket.h
-TARGETS := main.cc
+OBJS	= Intemediate.o main.o Socket.o VSocket.o
+SOURCE	= Intemediate.cpp main.cpp Socket.cc VSocket.cc
+HEADER	= Intermediate.h Socket.h VSocket.h
+OUT	= main.out
+CC	 = g++
+FLAGS	 = -g -c -Wall
+LFLAGS	 = -lssl -lcrypto
 
+all: $(OBJS)
+	$(CC) -g $(OBJS) -o $(OUT) $(LFLAGS)
 
-ALL := $(TARGETS)
-$(info $$TARGETS = $(TARGETS))
+Intemediate.o: Intemediate.cpp
+	$(CC) $(FLAGS) Intemediate.cpp -lcrypto
 
-%.o: %.cc $(DEPS)
-	$(CXX) $(CXXFLAGS) $<
+main.o: main.cpp
+	$(CC) $(FLAGS) main.cpp  -lcrypto
 
-%.out: %.o Socket.o
-	$(info $$^ = $^)
-	$(CXX) $^ Socket.o $(LDFLAGS) -o $^
+Socket.o: Socket.cc
+	$(CC) $(FLAGS) Socket.cc  -lcrypto
 
-main.out: main.o VSocket.o Socket.o SSLSocket.o Client.o
-	$(CXX) main.o VSocket.o Socket.o SSLSocket.o  Client.o $(LDFLAGS) -o $@
+VSocket.o: VSocket.cc
+	$(CC) $(FLAGS) VSocket.cc -lcrypto
 
 
 clean:
-	rm -f *.o *.out
-
-
-test1:
-	./main.out BobOmb
-
-test2:
-	./main.out Car
-  
-test3:
-	./main.out DogHouse
-
-test4:
-	./main.out Dragon
-
-test5:
-	./main.out Jovani
-
-test6:
-	./main.out SantaClaus
-
-test7:
-	./main.out TieFighter
-
-
-test: test1 test2 test3 test4 test5 test6 test7
+	rm -f $(OBJS) $(OUT)
