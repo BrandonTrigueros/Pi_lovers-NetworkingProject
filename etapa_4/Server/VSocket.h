@@ -1,7 +1,3 @@
-/**
- *
- **/
-
 #ifndef VSocket_h
 #define VSocket_h
 
@@ -13,15 +9,14 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>			// ntohs
 #include <unistd.h>			// close
-//#include <sys/types.h>
 #include <arpa/inet.h>
 #include <netdb.h>			// getaddrinfo, freeaddrinfo
 
 
 class VSocket {
   public:
-      void InitVSocket( char, bool=false );
-      void InitVSocket( int );
+    void InitVSocket( char, bool=false );
+    void InitVSocket( int );
     ~VSocket();
 
     void Close();
@@ -40,7 +35,6 @@ class VSocket {
     int Shutdown( int );
     size_t sendTo( const void *, size_t, void * );
     size_t recvFrom( void *, size_t, void * );
-
 
   protected:
     int idSocket;

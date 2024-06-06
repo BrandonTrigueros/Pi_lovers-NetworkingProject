@@ -1,4 +1,3 @@
-
 #ifndef FileManager_h
 #define FileManager_h
 
@@ -6,7 +5,6 @@
 #include <fstream>
 #include <string>
 #include <cstring>
-
 
 class FileManager {
 

@@ -18,7 +18,6 @@ class Intermediate {
     char* IPDirection;
     VSocket* clientSocket;
     
-    
     std::map<std::string/*Figura*/, std::string/*Mitad*/> server_pieza;
     std::multimap<std::string/*Ip*/, std::string/*Servers que lo contiene*/> ip_server;
   public:

@@ -1,263 +1,110 @@
-/**
- *  Establece la definición de la clase Socket para efectuar la comunicación
- *  de procesos que no comparten memoria, utilizando un esquema de memoria
- *  distribuida.  El desarrollo de esta clase se hará en varias etapas, primero
- *  los métodos necesarios para los clientes, en la otras etapas los métodos para el servidor,
- *  manejo de IP-v6, conexiones seguras y otros
- *
- *  Universidad de Costa Rica
- *  ECCI
- *  CI0123 Proyecto integrador de redes y sistemas operativos
- *  2023-ii
- *  Grupos: 2
- *
- **/
-
 #include "VSocket.h"
-
 #include <iostream>
-/**
-  *  Class initializer
-  *     use Unix socket system call
-  *
-  *  @param     char t: socket type to define
-  *     's' for stream
-  *     'd' for datagram
-  *  @param     bool ipv6: if we need a IPv6 socket
-  *
- **/
-void VSocket::InitVSocket( char t, bool IPv6 ){
+
+void VSocket::InitVSocket(char t, bool IPv6) {
   this->IPv6 = IPv6;
   int domain = this->IPv6 ? AF_INET6 : AF_INET;
   int type = t == 's' ? SOCK_STREAM : SOCK_DGRAM;
   this->idSocket = socket(domain, type, 0);
 }
 
-
-/**
-  *  Class initializer
-  *     use Unix socket system call
-  *
-  *  @param     int id: descriptor for an already opened socket (accept)
-  *
- **/
-void VSocket::InitVSocket( int id ){
+void VSocket::InitVSocket(int id) {
   this->idSocket = id;
 }
 
-
-/**
-  * Class destructor
-  *
- **/
 VSocket::~VSocket() {
   this->Close();
 }
 
-
-/**
-  * Close method
-  *    use Unix close system call (once opened a socket is managed like a file in Unix)
-  *
- **/
-void VSocket::Close(){
-  int st;
-  if ( -1 == st ) {
-    throw std::runtime_error( "Socket::Close()" );
+void VSocket::Close() {
+  int close_result;
+  if (close_result == -1) {
+    throw std::runtime_error("Socket::Close()");
   }
 }
 
-
-/**
-  * DoConnect method
-  *   use "connect" Unix system call
-  *
-  * @param      char * host: host address in dot notation, example "10.1.104.187"
-  * @param      int port: process address, example 80
-  *
- **/
-int VSocket::DoConnect( const char * hostip, int port ) {
-  int st;
+int VSocket::DoConnect(const char *hostip, int port) {
+  int connect_result;
   this->port = port;
-  struct sockaddr_in  host4;
-  memset( (char *) &host4, 0, sizeof( host4 ) );
+  struct sockaddr_in host4;
+  memset((char *)&host4, 0, sizeof(host4));
   host4.sin_family = AF_INET;
-  st = inet_pton( AF_INET, hostip, &host4.sin_addr );
-  if ( -1 == st ) {
-    throw( std::runtime_error( "VSocket::DoConnect, inet_pton" ));
+  connect_result = inet_pton(AF_INET, hostip, &host4.sin_addr);
+  if (connect_result == -1) {
+    throw(std::runtime_error("VSocket::DoConnect, inet_pton"));
   }
-  host4.sin_port = htons( port );
-  st = connect( idSocket, (sockaddr *) &host4, sizeof( host4 ) );
-  if ( -1 == st ) {
+  host4.sin_port = htons(port);
+  connect_result = connect(idSocket, (sockaddr *)&host4, sizeof(host4));
+  if (connect_result == -1) {
     std::perror("connect failed");
-    throw( std::runtime_error( "VSocket::DoConnect, connect" ));
+    throw(std::runtime_error("VSocket::DoConnect, connect"));
   }
-  return st;
-
+  return connect_result;
 }
 
-
-/**
-  * DoConnect method
-  *   use "connect" Unix system call
-  *
-  * @param      char * host: host address in dns notation, example "os.ecci.ucr.ac.cr"
-  * @param      char * service: process address, example "http"
-  *
- **/
-int VSocket::DoConnect( const char *host, const char *service ) {
-  int st;
-
-  if ( 0 == st ) {
+int VSocket::DoConnect(const char *host, const char *service) {
+  int connect_result;
+  if (connect_result == 0) {
   } else {
-    throw std::runtime_error( gai_strerror( st ) );
+    throw std::runtime_error(gai_strerror(connect_result));
   }
-
-  return st;
-
+  return connect_result;
 }
 
-
-/**
-  * Listen method
-  *
-  * @param      int queue: max pending connections to enqueue (server mode)
-  *
-  *  This method define how many elements can wait in queue
-  *
- **/
-int VSocket::Listen( int queue ) {
-  int st = listen( this->idSocket, queue/*length*/);
-
-  if ( -1 == st ) {
-    throw std::runtime_error( "VSocket::Listen( int )" );
+int VSocket::Listen(int queue) {
+  int listen_result = listen(this->idSocket, queue /*length*/);
+  if (listen_result == -1) {
+    throw std::runtime_error("VSocket::Listen( int )");
   }
-
-  return st;
-
+  return listen_result;
 }
 
-/**
-  * Bind method
-  *    use "bind" Unix system call (man 3 bind) (server mode)
-  *
-  * @param      int port: bind a unamed socket to a port defined in sockaddr structure
-  *
-  *  Links the calling process to a service at port
-  *
- **/
-int VSocket::Bind( int port ) {
-  int st;
+int VSocket::Bind(int port) {
+  int bind_result;
   this->port = port;
   struct sockaddr_in server_addr;
-  
-  server_addr.sin_family = AF_INET;	// Definimos la familia para IPv4
-  server_addr.sin_addr.s_addr = htonl( INADDR_ANY );	// Establecemos cualquier dirección
-  server_addr.sin_port = htons( port );	// El puerto asociado al servicio
-  
-  size_t len = sizeof( server_addr );
-  
-  st = bind( this->idSocket, (const sockaddr *) & server_addr, len );
-
-  if ( -1 == st ) {
-    throw std::runtime_error( "VSocket::Bind( int )" );
+  server_addr.sin_family = AF_INET;                // Definimos la familia para IPv4
+  server_addr.sin_addr.s_addr = htonl(INADDR_ANY); // Establecemos cualquier dirección
+  server_addr.sin_port = htons(port);              // El puerto asociado al servicio
+  size_t len = sizeof(server_addr);
+  bind_result = bind(this->idSocket, (const sockaddr *)&server_addr, len);
+  if (bind_result == -1) {
+    throw std::runtime_error("VSocket::Bind( int )");
   }
-
-  return st;
-
+  return bind_result;
 }
 
-
-/**
-  * DoAccept method
-  *    use "accept" Unix system call (man 3 accept) (server mode)
-  *
-  *  @returns   a new class instance
-  *
-  *  Waits for a new connection to service (TCP mode: stream)
-  *
- **/
-int VSocket::DoAccept(){
+int VSocket::DoAccept() {
   struct sockaddr_in address;
-  socklen_t address_len;std::cout << "ID: " << this->idSocket << std::endl;
-  int st = accept(this->idSocket, (sockaddr *)&address, &address_len);
-  
-  if ( -1 == st ) {
-    throw std::runtime_error( "VSocket::DoAccept()" );
+  socklen_t address_len;
+  int accept_resutl = accept(this->idSocket, (sockaddr *)&address, &address_len);
+  if (accept_resutl == -1) {
+    throw std::runtime_error("VSocket::DoAccept()");
   }
-  return st;
+  return accept_resutl;
 }
 
-
-/**
-  * Shutdown method
-  *    use "shutdown" Unix system call (man 3 shutdown)
-  *
-  *  @param	int mode define how to cease socket operation
-  *
-  *  Partial close the connection (TCP mode)
-  *
- **/
-int VSocket::Shutdown( int mode ) {
-  /*
-    Modes:
-    SHUT_RD: Disables further receive operations.
-    SHUT_WR: Disables further send operations.
-    SHUT_RDWR: Disables further send and receive operations.
-  */
-  int st = shutdown( this->idSocket, mode );
-
-  if ( -1 == st ) {
-    throw std::runtime_error( "VSocket::Shutdown( int )" );
+int VSocket::Shutdown(int mode) {
+  int shutdown_result = shutdown(this->idSocket, mode);
+  if (shutdown_result == -1) {
+    throw std::runtime_error("VSocket::Shutdown( int )");
   }
-
-  return st;
-
+  return shutdown_result;
 }
 
-
-/**
-  *  sendTo method
-  *
-  *  @param	const void * buffer: data to send
-  *  @param	size_t size data size to send
-  *  @param	void * addr address to send data
-  *
-  *  Send data to another network point (addr) without connection (Datagram)
-  *
- **/
-size_t VSocket::sendTo( const void * buffer, size_t size, void * addr ) {
-   // sendto -> send a message on a socket
-   int st = sendto(this->idSocket, buffer, size, 0, (sockaddr *)addr, sizeof(*((sockaddr*)addr)));
-
-   if ( -1 == st ) {
-      throw( std::runtime_error( "VSocket::sendTo()" ));
-   }
-
-   return st;
+size_t VSocket::sendTo(const void *buffer, size_t size, void *addr) {
+  int send_result = sendto(this->idSocket, buffer, size, 0, (sockaddr *)addr, sizeof(*((sockaddr *)addr)));
+  if (send_result == -1) {
+    throw(std::runtime_error("VSocket::sendTo()"));
+  }
+  return send_result;
 }
 
-/**
-  *  recvFrom method
-  *
-  *  @param	const void * buffer: data to send
-  *  @param	size_t size data size to send
-  *  @param	void * addr address to receive from data
-  *
-  *  @return	size_t bytes received
-  *
-  *  Receive data from another network point (addr) without connection (Datagram)
-  *
- **/
-size_t VSocket::recvFrom( void * buffer, size_t size, void * addr ) {
-   // recvfrom -> places the received message into the buffer buf
-   socklen_t addrlen = sizeof(*((sockaddr*)addr));
-   int st = recvfrom(this->idSocket, buffer, size, 0, (sockaddr *)addr, &addrlen);
-
-   if ( -1 == st ) {
-      throw( std::runtime_error( "VSocket::recvFrom()" ));
-   }
-
-   return st;
+size_t VSocket::recvFrom(void *buffer, size_t size, void *addr) {
+  socklen_t addrlen = sizeof(*((sockaddr *)addr));
+  int recv_result = recvfrom(this->idSocket, buffer, size, 0, (sockaddr *)addr, &addrlen);
+  if (recv_result == -1) {
+    throw(std::runtime_error("VSocket::recvFrom()"));
+  }
+  return recv_result;
 }
-

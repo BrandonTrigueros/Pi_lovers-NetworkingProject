@@ -1,15 +1,3 @@
-/**
- *  Universidad de Costa Rica
- *  ECCI
- *  CI0123 Proyecto integrador de redes y sistemas operativos
- *  2023-ii
- *  Grupos: 2 y 3
- *
- * (versión Fedora)
- *
- **/
-
-
 #ifndef VSocket_h
 #define VSocket_h
  
