@@ -7,6 +7,7 @@
 #include <unistd.h>    // close
 #include <arpa/inet.h>
 #include <netdb.h> // getaddrinfo, freeaddrinfo
+#include <iostream>
 
 #include "VSocket.h"
 
@@ -29,7 +30,7 @@ VSocket::~VSocket() {
 void VSocket::Close(){
   int close_operation = close(this->idSocket);
   if (close_operation == -1){
-    throw std::runtime_error("Socket::Close()");
+    throw std::runtime_error("Intermediate_Socket::Close()");
   }
 }
 
@@ -41,12 +42,12 @@ int VSocket::DoConnect(const char *hostip, int port) {
   host4.sin_family = AF_INET;
   connect_operation = inet_pton(AF_INET, hostip, &host4.sin_addr);
   if (connect_operation == -1) {
-    throw(std::runtime_error("VSocket::DoConnect, inet_pton"));
+    throw(std::runtime_error("Intermediate_VSocket::DoConnect, inet_pton"));
   }
   host4.sin_port = htons(port);
   connect_operation = connect(idSocket, (sockaddr *)&host4, sizeof(host4));
   if (connect_operation == -1) {
-    throw(std::runtime_error("VSocket::DoConnect, connect"));
+    throw(std::runtime_error("Intermediate_VSocket::DoConnect, connect"));
   }
   return connect_operation;
 }
@@ -68,10 +69,18 @@ int VSocket::DoConnect(const char *hostip, const char *service) {
   }
   freeaddrinfo(result);
   if (connect_operation == -1){
-    perror("VSocket::connect");
-    throw std::runtime_error("VSocket::DoConnect");
+    perror("Intermediate_VSocket::connect");
+    throw std::runtime_error("Intermediate_VSocket::DoConnect");
   }
   return connect_operation;
+}
+
+int VSocket::Listen(int queue) {
+  int listen_result = listen(this->idSocket, queue /*length*/);
+  if (listen_result == -1) {
+    throw std::runtime_error("Intermediate_VSocket::Listen( int )");
+  }
+  return listen_result;
 }
 
 int VSocket::Bind(int port) {
@@ -83,15 +92,36 @@ int VSocket::Bind(int port) {
   memset(host4.sin_zero, '\0', sizeof(host4.sin_zero));
   bind_operation = bind(this->idSocket, (sockaddr *)&host4, sizeof(host4));
   if (bind_operation == -1) {
-    throw(std::runtime_error("VSocket::Bind()"));
+    throw(std::runtime_error("Intermediate_VSocket::Bind()"));
   }
   return bind_operation;
+}
+
+int VSocket::DoAccept() {
+  struct sockaddr_in address;
+  socklen_t address_len = sizeof(address);  // Inicializar correctamente el tamaño
+  int accept_result = accept(this->idSocket, (sockaddr *)&address, &address_len);
+  if (accept_result == -1) {
+    int error_code = errno;  // Capturar el código de error
+    std::cerr << "Intermediate_VSocket::DoAccept() failed. Error code: " << error_code 
+              << ", Message: " << strerror(error_code) << std::endl;
+    throw std::runtime_error("Intermediate_VSocket::DoAccept() failed.");
+  }
+  return accept_result;
+}
+
+int VSocket::Shutdown(int mode) {
+  int shutdown_result = shutdown(this->idSocket, mode);
+  if (shutdown_result == -1) {
+    throw std::runtime_error("Intermediate_VSocket::Shutdown( int )");
+  }
+  return shutdown_result;
 }
 
 size_t VSocket::sendTo(const void *buffer, size_t size, void *addr) {
   int send_result = sendto(this->idSocket, buffer, size, 0, (sockaddr *)addr, sizeof(*((sockaddr *)addr)));
   if (send_result == -1) {
-    throw(std::runtime_error("VSocket::sendTo()"));
+    throw(std::runtime_error("Intermediate_VSocket::sendTo()"));
   }
   return send_result;
 }
@@ -100,7 +130,7 @@ size_t VSocket::recvFrom(void *buffer, size_t size, void *addr) {
   socklen_t addrlen = sizeof(*((sockaddr *)addr));
   int recv_result = recvfrom(this->idSocket, buffer, size, 0, (sockaddr *)addr, &addrlen);
   if (recv_result == -1) {
-    throw(std::runtime_error("VSocket::recvFrom()"));
+    throw(std::runtime_error("Intermediate_VSocket::recvFrom()"));
   }
   return recv_result;
 }

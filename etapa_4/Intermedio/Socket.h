@@ -16,6 +16,7 @@ class Socket : public VSocket {
     size_t Read( void *, size_t );
     size_t Write( const void *, size_t );
     size_t Write( const char * );
+    Socket * Accept();
 
   protected:
 

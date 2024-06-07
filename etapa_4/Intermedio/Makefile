@@ -4,7 +4,7 @@ HEADER	= Intermediate.h Socket.h VSocket.h
 OUT	= main.out
 CC	 = g++
 FLAGS	 = -g -c -Wall
-LFLAGS	 = -lssl -lcrypto
+LFLAGS	 =
 
 all: $(OBJS)
 	$(CC) -g $(OBJS) -o $(OUT) $(LFLAGS)

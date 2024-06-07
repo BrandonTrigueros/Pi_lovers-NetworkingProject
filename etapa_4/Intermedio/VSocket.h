@@ -17,7 +17,11 @@ class VSocket {
     virtual size_t Write( const void *, size_t ) = 0;
     virtual size_t Write( const char * ) = 0;
 
+    int Listen( int );
     int Bind( int );
+    int DoAccept();
+    virtual VSocket * Accept() = 0;
+    int Shutdown( int );
 
     size_t sendTo( const void *, size_t, void * );
     size_t recvFrom( void *, size_t, void * );

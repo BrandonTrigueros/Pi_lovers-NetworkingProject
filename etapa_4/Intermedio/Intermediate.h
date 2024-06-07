@@ -7,9 +7,10 @@
 #include "Socket.h"
 #include <arpa/inet.h>
 #include <string.h>
+#include <thread>
 
 #define PORT 1233
-#define MAX 512
+#define MAX 1024
 
 class Intermediate {
 
@@ -24,9 +25,10 @@ class Intermediate {
     Intermediate() = default;
     ~Intermediate() = default;
     void run();
-    void connectServer();
-    void listenServer();
-    void listerClient();
+    void connect_server();
+    void listen_server();
+    void intermediate_client();
+    static void listen_client(void*);
 
 };
 

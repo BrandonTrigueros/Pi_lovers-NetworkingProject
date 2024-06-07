@@ -30,6 +30,7 @@ void Client::run() {
     request = "http://legoFigures/get-" + this->figure + "-0"
         + std::to_string(requestNumber);
     this->clientSocket->Write(request.c_str());
+    std::cout << "ENVIE REQUEST" << std::endl;
     // Reset the buffers
     concatResponse = "";
     memset(responseArray, 0, MAX_BUFFER_SIZE);
