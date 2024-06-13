@@ -22,10 +22,9 @@ bool Client::analyzeArgs(int argc, char* argv[]) {
 }
 
 void Client::run() {
-  // Create an SSL socket and connect to the server
-  for (int requestNumber = 1; requestNumber < 3; requestNumber++) {
+  for (int requestNumber = 1; requestNumber < 3; requestNumber++) {     // 2 requests
     this->clientSocket = new Socket(this->socketType, false);
-    this->clientSocket->Connect(this->osv4, 1233);
+    this->clientSocket->Connect(this->osv4, 1233);  // Client is connected to 1233 port
     // Request format http://legoFigures/get-<figura>-<parte>
     request = "http://legoFigures/get-" + this->figure + "-0"
         + std::to_string(requestNumber);

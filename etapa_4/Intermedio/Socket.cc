@@ -36,12 +36,12 @@ size_t Socket::Read(void *text, size_t size) {
   std::cout << "TEXT: " << buffer << std::endl;
 
   int read_result = read(this->idSocket, text, size);
-  std::cout << "READ: " << read_result << std::endl;
+  std::cout << "READ: " << read_result << std::endl; 
   if (read_result == -1) {
     throw std::runtime_error("Intermediate_Socket::Read( const void *, size_t )");
   }
   return read_result;
-}
+} // Puede correrlo un toque bro?
 
 size_t Socket::Write(const void *text, size_t size) {
   int write_result = write(this->idSocket, text, size);
