@@ -33,14 +33,28 @@ void RequestQueue::enqueue(RequestQueue* queue, char* request) {
 }
 
 char* RequestQueue::dequeue(RequestQueue* queue, char* request) {
-
+  if (!queue->isEmpty(queue)) {
+    request = queue->head->request;
+    queue->removeFirstRequest(queue);
+    std::cout << "Request dequeued: " << request << std::endl;
+  }
+  return request;
 }
 
 void RequestQueue::removeFirstRequest(RequestQueue* queue) {
-
+  assert(queue);
+  assert(!queue->isEmpty(queue));
+  queue_node* node = queue->head;
+  queue->head = queue->head->next_request;
+  free(node);
+  if (queue->head == nullptr) {
+    queue->tail = nullptr;
+  }
 }
 
 void RequestQueue::clearQueue(RequestQueue* queue) {
-
+  assert(queue);
+  while (!queue->isEmpty(queue)) {
+    queue->removeFirstRequest(queue);
+  }
 }
-
