@@ -1,6 +1,6 @@
-OBJS	= Intermediate.o RequestQueue.o Socket.o VSocket.o main.o
-SOURCE	= Intermediate.cpp RequestQueue.cpp Socket.cc VSocket.cc main.cpp
-HEADER	= RequestQueue.h Socket.h VSocket.h Intermediate.h
+OBJS	= Intermediate.o RequestQueue.o VSocket.o Socket.o ResponseQueue.o main.o
+SOURCE	= Intermediate.cpp RequestQueue.cpp VSocket.cc Socket.cc ResponseQueue.cpp main.cpp
+HEADER	= ResponseQueue.h Intermediate.h RequestQueue.h VSocket.h Socket.h
 OUT	= Intermediate.out
 CC	 = g++
 FLAGS	 = -g -c -Wall
@@ -15,11 +15,14 @@ Intermediate.o: Intermediate.cpp
 RequestQueue.o: RequestQueue.cpp
 	$(CC) $(FLAGS) RequestQueue.cpp 
 
+VSocket.o: VSocket.cc
+	$(CC) $(FLAGS) VSocket.cc 
+
 Socket.o: Socket.cc
 	$(CC) $(FLAGS) Socket.cc 
 
-VSocket.o: VSocket.cc
-	$(CC) $(FLAGS) VSocket.cc 
+ResponseQueue.o: ResponseQueue.cpp
+	$(CC) $(FLAGS) ResponseQueue.cpp 
 
 main.o: main.cpp
 	$(CC) $(FLAGS) main.cpp 

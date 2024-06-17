@@ -6,6 +6,7 @@
 #include "Socket.h"
 #include "VSocket.h"
 #include "RequestQueue.h"
+#include "ResponseQueue.h"
 
 #define CLIENT_PORT 1234 //4100
 #define TCP_PORT 4200
@@ -16,7 +17,7 @@ class Intermediate {
   private:
     char* userRequest;
     RequestQueue* request_queue;
-    // Response queue
+    ResponseQueue* response_queue;
     // Map intermediates & ip
     // Multimap Figuras & servers
 

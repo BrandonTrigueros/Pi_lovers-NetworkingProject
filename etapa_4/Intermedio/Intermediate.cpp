@@ -4,6 +4,9 @@ Intermediate::Intermediate() {
   this->userRequest = nullptr;
   this->request_queue = new RequestQueue();
   request_queue->initQueue(request_queue);
+
+  this->response_queue = new ResponseQueue();
+  response_queue->initQueue(response_queue);
 }
 
 Intermediate::~Intermediate() {
