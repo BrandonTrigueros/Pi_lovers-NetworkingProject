@@ -1,50 +1,25 @@
-CC  := gcc
-CXX := g++
-CFLAGS := -g -c
-CXXFLAGS := -g -c 
-LDFLAGS := -lssl -lcrypto
-DEPS := Socket.h
-TARGETS := main.cc
+OBJS	= Client.o Socket.o VSocket.o main.o
+SOURCE	= Client.cc Socket.cc VSocket.cc main.cc
+HEADER	= Client.h Socket.h VSocket.h
+OUT	= Client.out
+CC	 = g++
+FLAGS	 = -g -c -Wall
+LFLAGS	 =   
 
+all: $(OBJS)
+	$(CC) -g $(OBJS) -o $(OUT) $(LFLAGS)
 
-ALL := $(TARGETS)
-$(info $$TARGETS = $(TARGETS))
+Client.o: Client.cc
+	$(CC) $(FLAGS) Client.cc 
 
-%.o: %.cc $(DEPS)
-	$(CXX) $(CXXFLAGS) $<
+Socket.o: Socket.cc
+	$(CC) $(FLAGS) Socket.cc 
 
-%.out: %.o Socket.o
-	$(info $$^ = $^)
-	$(CXX) $^ Socket.o $(LDFLAGS) -o $^
+VSocket.o: VSocket.cc
+	$(CC) $(FLAGS) VSocket.cc 
 
-main.out: main.o VSocket.o Socket.o SSLSocket.o Client.o
-	$(CXX) main.o VSocket.o Socket.o SSLSocket.o  Client.o $(LDFLAGS) -o $@
-
+main.o: main.cc
+	$(CC) $(FLAGS) main.cc 
 
 clean:
-	rm -f *.o *.out
-
-
-test1:
-	./main.out BobOmb
-
-test2:
-	./main.out Car
-  
-test3:
-	./main.out DogHouse
-
-test4:
-	./main.out Dragon
-
-test5:
-	./main.out Jovani
-
-test6:
-	./main.out SantaClaus
-
-test7:
-	./main.out TieFighter
-
-
-test: test1 test2 test3 test4 test5 test6 test7
+	rm -f $(OBJS) $(OUT)

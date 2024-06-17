@@ -1,18 +1,24 @@
-
 #ifndef Socket_h
 #define Socket_h
 
+#include <stdio.h>	// for perror
+#include <stdlib.h>	// for exit
+#include <string.h>	// for memset
+#include <arpa/inet.h>	// for inet_pton
+#include <sys/types.h>	// for connect 
+#include <sys/socket.h>
+
 #include "VSocket.h"
-#include <iostream>
+
 
 class Socket : public VSocket {
 
   public:
-    Socket(char, bool = false );
+    Socket( char, bool = false );
+    Socket( int );
     ~Socket();
-    void Close();
     int Connect( const char *, int );
-    int Connect( const char * , const char * );
+    int Connect( const char *, const char * );
     size_t Read( void *, size_t );
     size_t Write( const void *, size_t );
     size_t Write( const char * );
@@ -23,4 +29,3 @@ class Socket : public VSocket {
 };
 
 #endif
-
