@@ -15,7 +15,20 @@ Client::~Client() {
 }
 
 void Client::run() {
+  this->clientSocket = new Socket('s', false);
+  this->ipDirection = "127.0.0.1";
+  this->request = "GET /" + this->figure + "/ /HTTP/1.1\r\n";
+  this->clientSocket->Connect(this->ipDirection, CLIENT_PORT);
+  this->clientSocket->Write(this->request.c_str());
 
+  std::cout << "Request was sent" << std::endl;
+
+  this->response = "";
+  while (this->clientSocket->Read(this->buffer, MAXBUF) > 0)
+  {
+    this->response += this->buffer; // Appending received data to the response string
+  }
+  printResponse();
 }
 
 bool Client::analyzeArgs(int argc, char *argv[]) {
