@@ -1,27 +1,29 @@
-# Linux Makefile
-#
+OBJS	= FileManager.o main.o Server.o Socket.o VSocket.o
+SOURCE	= FileManager.cc main.cc Server.cc Socket.cc VSocket.cc
+HEADER	= Server.h Socket.h VSocket.h FileManager.h
+OUT	= Server.out
+CC	 = g++
+FLAGS	 = -g -c -Wall
+LFLAGS	 = 
 
-CC  := gcc
-CXX := g++
-CFLAGS := -g -c
-CXXFLAGS := -g -c 
-LDFLAGS := 
-DEPS := Socket.h
-TARGETS := main.out
+all: $(OBJS)
+	$(CC) -g $(OBJS) -o $(OUT) $(LFLAGS)
 
-ALL := $(TARGETS)
-$(info $$TARGETS = $(TARGETS))
+FileManager.o: FileManager.cc
+	$(CC) $(FLAGS) FileManager.cc 
 
-%.o: %.cc $(DEPS)
-	$(CXX) $(CXXFLAGS) $<
+main.o: main.cc
+	$(CC) $(FLAGS) main.cc 
 
-%.out: %.o VSocket.o Socket.o Server.o FileManager.o MirrorClientTest.o
-	$(info $$^ = $^)
-	$(CXX) $^ FileManager.o $(LDFLAGS) -o $^
+Server.o: Server.cc
+	$(CC) $(FLAGS) Server.cc 
 
-main.out:	main.o VSocket.o Socket.o Server.o FileManager.o
-	$(CXX) main.o VSocket.o Socket.o Server.o FileManager.o $(LDFLAGS) -o $@
+Socket.o: Socket.cc
+	$(CC) $(FLAGS) Socket.cc 
+
+VSocket.o: VSocket.cc
+	$(CC) $(FLAGS) VSocket.cc 
+
 
 clean:
-	rm -f *.o *.out
-
+	rm -f $(OBJS) $(OUT)

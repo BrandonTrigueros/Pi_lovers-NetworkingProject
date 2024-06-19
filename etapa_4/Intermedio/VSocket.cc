@@ -7,6 +7,14 @@ void VSocket::InitVSocket(char t, bool IPv6)
   int domain = this->IPv6 ? AF_INET6 : AF_INET;
   int type = t == 's' ? SOCK_STREAM : SOCK_DGRAM;
   this->idSocket = socket(domain, type, 0);
+  int timeout_sec = 3;
+  struct timeval timeout;
+  timeout.tv_sec = timeout_sec;
+  timeout.tv_usec = 0;
+  if (setsockopt(this->idSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
+    perror("Timeout set failed\n");
+    this->Close();
+  }
 }
 
 void VSocket::InitVSocket(int id)
@@ -52,7 +60,7 @@ int VSocket::DoConnect(const char *hostip, int port)
 
 int VSocket::DoConnect(const char *host, const char *service)
 {
-  int connect_result ;
+  int connect_result;
   if (0 == connect_result)
   {
   }
@@ -129,10 +137,23 @@ int VSocket::Shutdown(int mode)
 
 size_t VSocket::sendTo(const void *buffer, size_t size, void *addr)
 {
-  return 0;
+  int send_result = sendto(this->idSocket, buffer, size, 0, (sockaddr *)addr, sizeof(*((sockaddr *)addr)));
+  if (-1 == send_result)
+  {
+    throw(std::runtime_error("VSocket::sendTo()"));
+  }
+  return send_result;
 }
 
 size_t VSocket::recvFrom(void *buffer, size_t size, void *addr)
 {
-  return 0;
+  socklen_t addrlen = sizeof(*((sockaddr *)addr));
+
+  int recv_result = recvfrom(this->idSocket, buffer, size, 0, (sockaddr *)addr, &addrlen);
+  if (-1 == recv_result)
+  {
+    std::cerr << "Error: " << strerror(errno) << '\n';
+  }
+
+  return recv_result;
 }

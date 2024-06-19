@@ -2,6 +2,6 @@
 
 int main( int argc, char ** argv ) {
   Server server;
-  server.Run();
+  server.run();
   return 0;
 }
