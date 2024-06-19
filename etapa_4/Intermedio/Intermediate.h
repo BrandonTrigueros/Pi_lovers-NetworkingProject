@@ -10,14 +10,15 @@
 
 #define CLIENT_PORT 1234 //4100
 #define TCP_PORT 4200
-#define UDP_PORT 4300
+#define UDP_PORT_INTERMEDIATE 4300
+#define UDP_PORT_SERVER 4400
 #define BUFFER_SIZE 512
 
 class Intermediate {
   private:
     char* userRequest;
-    RequestQueue* request_queue;
-    ResponseQueue* response_queue;
+    RequestQueue* requestQueue;
+    ResponseQueue* responseQueue;
     // Map intermediates & ip
     // Multimap Figuras & servers
 
@@ -31,8 +32,8 @@ class Intermediate {
     static void handleClient(void*, RequestQueue*);
     // void sendTCP();
     // void receiveTCP();
-    
-    // void sendUDP();
+
+    void intermediateServer_UDP();
     // void receiveUDP();
 
     // buildRequest();
