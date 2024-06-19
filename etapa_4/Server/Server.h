@@ -20,8 +20,7 @@ class Server {
   ~Server() = default;
   void run();
 
-  void listenIntermediateUDP();
-  static void handleIntermediateUDP(void*);
+  static void listenIntermediateUDP();
 
 };
 #endif // SERVER_H

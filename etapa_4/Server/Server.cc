@@ -1,29 +1,25 @@
 #include "Server.h"
 
-void Server::run() {
-
+void Server::run()
+{
+  std::thread *worker;
+  worker = new std::thread(listenIntermediateUDP);
+  worker->join();
 }
 
-
-void  Server::listenIntermediateUDP(){
-  std::thread* worker;
-  VSocket *piezas, *intermediate;
-  VSocket *piezas = new Socket('d', false);
-  piezas->Bind(UDP_PORT);
+void Server::listenIntermediateUDP() {
+  struct sockaddr serverInfo;
+  VSocket *intermediate = new Socket('d', false);
+  intermediate->Bind(UDP_PORT);
+  char buffer[BUFFER_SIZE];
+  char* message = (char *) "Connection accepted";
+  memset(&serverInfo, 0, sizeof(serverInfo));
+  std::cout << "Server is running" << std::endl;
   while (true) {
-    intermediate = piezas->Accept();
-    worker = new std::thread(handleIntermediateUDP, (void*)intermediate);
+    intermediate->recvFrom((void*) buffer, BUFFER_SIZE, (void*)&serverInfo);
+    std::cout << "Received data: " << buffer << std::endl;
+    intermediate->sendTo((void*) message, strlen(message), (void*)&serverInfo);
+    std::cout << "Sent data: " << message << std::endl;
   }
   intermediate->Close();
-}
-
-void Server::handleIntermediateUDP(void* socket){
-  VSocket* intermediate = (VSocket*)socket;
-  struct sockaddr server_info;
-  char buffer[BUFFER_SIZE];
-  memset(&server_info, 0, sizeof(server_info));
-  intermediate->recvFrom((void*) buffer, BUFFER_SIZE, (void*)&server_info);
-  std::cout << "Received data: " << buffer << std::endl;
-  char message[] = "Se ha establecido la conexion con exito";
-  intermediate->sendTo((void*) message, strlen(message), (void*)&server_info);
 }
