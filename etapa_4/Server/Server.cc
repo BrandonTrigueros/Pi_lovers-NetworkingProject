@@ -8,18 +8,25 @@ void Server::run() {
   // scanExistingPieces();
   this->scanExistingPieces();
   // print this->serverPieces
-  for (const auto& piece : this->serverPieces) {
-    std::cout << piece << std::endl;
-  }
+  // for (const auto& piece : this->serverPieces) {
+  //   std::cout << piece << std::endl;
+  // }
 }
 
+// todo server sends a list of available pieces to the intermediate server
 void Server::listenIntermediateUDP() {
   struct sockaddr serverInfo;
   VSocket* intermediate = new Socket('d', false);
   intermediate->Bind(UDP_PORT);
   char buffer[BUFFER_SIZE];
-  char* message = (char*)"Connection accepted";
+
+  std::string message = "";
+  for (const auto& piece : this->serverPieces) {
+    message += piece + ",";
+  }
+
   memset(&serverInfo, 0, sizeof(serverInfo));
+
   std::cout << "Server is running" << std::endl;
   while (true) {
     intermediate->recvFrom((void*)buffer, BUFFER_SIZE, (void*)&serverInfo);
