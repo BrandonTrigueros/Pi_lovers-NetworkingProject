@@ -9,7 +9,8 @@
 #include "ResponseQueue.h"
 
 #define CLIENT_PORT 1234 //4100
-#define TCP_PORT 4200
+#define TCP_PORT_INTERMEDIATE 4200
+#define TCP_PORT_SERVER 4500
 #define UDP_PORT_INTERMEDIATE 4300
 #define UDP_PORT_SERVER 4400
 #define BUFFER_SIZE 512
@@ -19,6 +20,7 @@ class Intermediate {
     char* userRequest;
     RequestQueue* requestQueue;
     ResponseQueue* responseQueue;
+    std::string ipDirection = "127.0.0.1";
     // Map intermediates & ip
     // Multimap Figuras & servers
 
@@ -36,7 +38,8 @@ class Intermediate {
     void intermediateServer_UDP();
     // void receiveUDP();
 
-    // buildRequest();
+    void sendTCPRequest(RequestQueue*);
+    std::string buildRequest(int);
     // removeFromQueue();
 
     // addToQueue();
