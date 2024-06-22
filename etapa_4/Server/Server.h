@@ -21,6 +21,8 @@ class Server {
   void run();
 
   static void listenIntermediateUDP();
+  static void listenIntermediateTCP();
+  static void responseTCP(void*);
 
 };
 #endif // SERVER_H
