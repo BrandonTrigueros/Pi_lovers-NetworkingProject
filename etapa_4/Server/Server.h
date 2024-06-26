@@ -26,5 +26,8 @@ class Server {
   private:
   static void listenIntermediateUDP();
   void scanExistingPieces();
+  static void listenIntermediateTCP();
+  static void responseTCP(void*);
+
 };
 #endif  // SERVER_H

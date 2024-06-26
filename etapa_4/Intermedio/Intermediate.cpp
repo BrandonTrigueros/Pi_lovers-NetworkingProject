@@ -16,11 +16,42 @@ void Intermediate::run() {
   intermediateServer_UDP();
   broadcastNewServer();
   // listenClient();
+  std::cout << "Connection established UDP" << std::endl;
+
+  while (true) {
+    // ToDo: Implement sempahore
+    if (this->requestQueue->isEmpty(this->requestQueue)) {
+      std::cout << "Waiting for request" << std::endl;
+      std::cout << "After response: Request received" << std::endl;
+    }
+    sendTCPRequest(this->requestQueue);
+  }
 }
 
 void Intermediate::listenIntermidiateBroadcast() { }
-
 int Intermediate::broadcastNewServer() { }
+
+  while (true)
+  {
+    client = intermediateSocket->Accept();
+    worker = new std::thread(handleClient, (void *)client, this->requestQueue);
+  }
+  
+  worker->join();
+  intermediateSocket->Close();
+}
+
+void Intermediate::handleClient(void *socket, RequestQueue *request_queue) {
+  char userRequest[BUFFER_SIZE];
+  VSocket *client = (VSocket *)socket;
+  client->Read(userRequest, BUFFER_SIZE);
+  std::cout << userRequest << std::endl;
+  request_queue->enqueue(request_queue, userRequest);
+  std::string response = "Connection handled";
+  client->Write(response.c_str());
+  client->Close();
+}
+
 
 void Intermediate::intermediateServer_UDP() {
   VSocket* intermediate;
@@ -48,7 +79,6 @@ void Intermediate::intermediateServer_UDP() {
       isConnected = true;
     }
   }
-
   intermediate->Close();
 }
 
@@ -77,4 +107,29 @@ void Intermediate::handleClient(void* socket, RequestQueue* request_queue) {
   request_queue->dequeue(request_queue, userRequest);
   client->Write(response.c_str());
   client->Close();
+
+void Intermediate::sendTCPRequest(RequestQueue* requestQueue) {
+  VSocket* intermediateSocket;
+  char buffer[BUFFER_SIZE]; // ToDo: Implement buffer
+  std::string figureRequest; // ToDo: Implement figure request
+  for (int i = 0; i < 2; i++) {
+    intermediateSocket = new Socket('s', false);
+    intermediateSocket->Connect(this->ipDirection.c_str(), TCP_PORT_SERVER);
+    figureRequest = buildRequest(i);
+    std::cout << "Sending data: " << figureRequest << std::endl;
+    intermediateSocket->Write(figureRequest.c_str(), strlen(figureRequest.c_str()));
+    intermediateSocket->Read(buffer, BUFFER_SIZE);
+    std::cout << "Received data: " << buffer << std::endl;
+    intermediateSocket->Close();
+  }
+}
+
+std::string Intermediate::buildRequest(int figurePart) {
+  char* dequeue_value = "\0";
+  this->requestQueue->dequeue(this->requestQueue, dequeue_value);
+  std::string legoFigure(dequeue_value);
+  std::string request = "GET / ";
+  request += legoFigure + "%" + std::to_string(figurePart) + "//HTTP\r\n\r\n"; 
+  std::cout << "Request: " << request << std::endl;
+  return request;
 }
