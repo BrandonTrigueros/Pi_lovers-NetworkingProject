@@ -1,13 +1,19 @@
 #ifndef INTERMEDIATE_H
 #define INTERMEDIATE_H
 
-#include <thread>
-#include <iostream>
-#include "Socket.h"
-#include "VSocket.h"
 #include "RequestQueue.h"
 #include "ResponseQueue.h"
+#include "Socket.h"
+#include "VSocket.h"
+#include <iostream>
+#include <map>
+#include <thread>
+#include <vector>
 
+
+#define CLIENT_PORT 4100
+#define TCP_PORT 4200
+#define UDP_BROADCAST_PORT 4300
 #define CLIENT_PORT 1234 //4100
 #define TCP_PORT_INTERMEDIATE 4200
 #define TCP_PORT_SERVER 4500
@@ -17,6 +23,13 @@
 
 class Intermediate {
   private:
+  char* userRequest;
+  RequestQueue* requestQueue;
+  ResponseQueue* responseQueue;
+  // Map ip & figuras
+  std::map<std::string, std::vector<std::string>> routingTable;
+
+  // Multimap Figuras & servers
     char* userRequest;
     RequestQueue* requestQueue;
     ResponseQueue* responseQueue;
@@ -25,26 +38,33 @@ class Intermediate {
     // Multimap Figuras & servers
 
   public:
-    Intermediate();
-    ~Intermediate();
-    void run();
+  Intermediate();
+  ~Intermediate();
+  void run();
 
-    void clientIntermediate();
-    void listenClient();
-    static void handleClient(void*, RequestQueue*);
-    // void sendTCP();
-    // void receiveTCP();
+  private:
+  // intermidiate
+  void listenIntermidiateBroadcast();
+  int broadcastNewServer();
 
-    void intermediateServer_UDP();
-    // void receiveUDP();
+  void listenClient();
+  static void handleClient(void*, RequestQueue*);
 
-    void sendTCPRequest(RequestQueue*);
-    std::string buildRequest(int);
-    // removeFromQueue();
+  // void sendTCP();
+  // void receiveTCP();
 
-    // addToQueue();
+  void sendTCPRequest(RequestQueue*);
+  std::string buildRequest(int);
+  // removeFromQueue();
 
-    // castHTML();
-  
+  void intermediateServer_UDP();
+  // void receiveUDP();
+
+  // buildRequest();
+  // removeFromQueue();
+
+  // addToQueue();
+
+  // castHTML();
 };
-#endif // MASTERINTERMEDIATE_H
+#endif  // MASTERINTERMEDIATE_H

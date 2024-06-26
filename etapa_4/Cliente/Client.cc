@@ -1,5 +1,4 @@
 #include "Client.h"
-#include "Client.h"
 
 Client::Client() {
   this->clientSocket = nullptr;
@@ -10,9 +9,7 @@ Client::Client() {
   memset(this->buffer, 0, MAXBUF);
 }
 
-Client::~Client() {
-
-}
+Client::~Client() { }
 
 void Client::run() {
   this->clientSocket = new Socket('s', false);
@@ -24,22 +21,19 @@ void Client::run() {
   std::cout << "Request was sent" << std::endl;
 
   this->response = "";
-  while (this->clientSocket->Read(this->buffer, MAXBUF) > 0)
-  {
-    this->response += this->buffer; // Appending received data to the response string
+  while (this->clientSocket->Read(this->buffer, MAXBUF) > 0) {
+    this->response
+        += this->buffer;  // Appending received data to the response string
   }
   printResponse();
 }
 
-bool Client::analyzeArgs(int argc, char *argv[]) {
-  bool validArgs = false; // Assumes the arguments are invalid
-  if (argc > 1)
-  {
+bool Client::analyzeArgs(int argc, char* argv[]) {
+  bool validArgs = false;  // Assumes the arguments are invalid
+  if (argc > 1) {
     validArgs = true;
     this->figure = argv[1];
-  }
-  else
-  {
+  } else {
     std::cerr << RED << "WRONG USAGE!\n"
               << RESET << "Usage: ./Client.out <legoFigure>" << std::endl;
   }
