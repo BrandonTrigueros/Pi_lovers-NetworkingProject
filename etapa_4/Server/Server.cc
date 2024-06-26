@@ -1,69 +1,42 @@
 #include "Server.h"
 
 void Server::run() {
-  // std::thread* worker;
-  // worker = new std::thread(listenIntermediateUDP);
-  // worker->join();
-
-  // scanExistingPieces();
-  this->scanExistingPieces();
-  // print this->serverPieces
-  // for (const auto& piece : this->serverPieces) {
-  //   std::cout << piece << std::endl;
-  // }
-
-void Server::run()
-{
   std::thread *worker_UDP, *worker_TCP;
-  std::cout << "Server running" << std::endl;
   worker_UDP = new std::thread(listenIntermediateUDP);
   worker_TCP = new std::thread(listenIntermediateTCP);
   worker_TCP->join();
   worker_UDP->join();
 }
 
-// todo server sends a list of available pieces to the intermediate server
 void Server::listenIntermediateUDP() {
-  struct sockaddr serverInfo;
-  VSocket* intermediate = new Socket('d', false);
-  intermediate->Bind(UDP_PORT);
-  char buffer[BUFFER_SIZE];
-
-  std::string message = "";
-  for (const auto& piece : this->serverPieces) {
-    message += piece + ",";
-  }
-
-  memset(&serverInfo, 0, sizeof(serverInfo));
-
-  std::cout << "Server is running" << std::endl;
-  while (true) {
-    intermediate->recvFrom((void*)buffer, BUFFER_SIZE, (void*)&serverInfo);
-    std::cout << "Received data: " << buffer << std::endl;
-    intermediate->sendTo((void*)message, strlen(message), (void*)&serverInfo);
-  int status = 0;
-  struct sockaddr_in serverInfo;
+  int st;
   char ip[BUFFER_SIZE];
   char buffer[BUFFER_SIZE];
-  VSocket *intermediate = new Socket('d', false);
-  intermediate->Bind(UDP_PORT);
-  char* message;
+  std::string message = "";
+  Socket* intermediate = new Socket('d', false);
+  struct sockaddr serverInfo;
   memset(&serverInfo, 0, sizeof(serverInfo));
-
+  intermediate->Bind(UDP_PORT);
   while (true) {
-    status = intermediate->recvFrom((void*) buffer, BUFFER_SIZE, (void*)&serverInfo);
-    std::cout << "Received data: " << buffer << std::endl;
-    if( status > 0 ) {
+    st = intermediate->recvFrom((void*)buffer, BUFFER_SIZE, (void*)&serverInfo);
+    if (st > 0) {
+      // Concatenar IP al mensaje
+      struct sockaddr_in& serverInfo = *(struct sockaddr_in*)&serverInfo;
       inet_ntop(AF_INET, &(serverInfo.sin_addr), ip, BUFFER_SIZE);
-      message = (char*)ip;
+      message = (char*)ip + std::string(":");
+      // Concatenar piezas conocidas al mensaje
+      scanExistingPieces();
+      for (const auto& piece : this->serverPieces) {
+        message += piece + ",";
+      }
+      // Enviar mensaje
+      intermediate->sendTo(
+          (void*)message.c_str(), strlen(message.c_str()), (void*)&serverInfo);
     }
-    status = intermediate->sendTo((void*) message, strlen(message), (void*)&serverInfo);
-    std::cout << "Sent data: " << message << std::endl;
+    intermediate->Close();
   }
-  intermediate->Close();
 }
 
-<<<<<<< etapa_4/Server/Server.cc
 void Server::scanExistingPieces() {
   std::string directoryPath = "./Legos";
   if (!std::filesystem::exists(directoryPath)) {
@@ -75,14 +48,14 @@ void Server::scanExistingPieces() {
     }
   }
 }
-=======
+
 void Server::listenIntermediateTCP() {
   std::thread* thread_TCP;
   VSocket *server, *intermediate;
   server = new Socket('s');
 
-  server->Bind(TCP_PORT);  // Port to access this mirror server
-  server->Listen(5);  // Set backlog queue to 5 conections
+  server->Bind(TCP_PORT);
+  server->Listen(5);
 
   while (true) {
     intermediate = server->Accept();
@@ -91,6 +64,7 @@ void Server::listenIntermediateTCP() {
   thread_TCP->join();
 }
 
+// todo: Hacer qudevuelva el html solicitado
 void Server::responseTCP(void* socket) {
   char request[BUFFER_SIZE];
   char* response = (char*)"TCP connection accepted";

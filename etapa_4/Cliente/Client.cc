@@ -18,8 +18,6 @@ void Client::run() {
   this->clientSocket->Connect(this->ipDirection, CLIENT_PORT);
   this->clientSocket->Write(this->request.c_str());
 
-  std::cout << "Request was sent" << std::endl;
-
   this->response = "";
   while (this->clientSocket->Read(this->buffer, MAXBUF) > 0) {
     this->response
