@@ -17,14 +17,9 @@ Socket::~Socket()
 
 int Socket::Connect(const char *host, int port)
 {
-
   return this->DoConnect(host, port);
 }
 
-int Socket::Connect(const char *host, const char *service)
-{
-  return this->DoConnect(host, service);
-}
 
 size_t Socket::Read(void *text, size_t size)
 {
