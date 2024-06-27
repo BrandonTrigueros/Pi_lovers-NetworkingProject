@@ -4,7 +4,6 @@ void Server::run()
 {
   scanExistingPieces();
   concatFigures();
-
   bool conected = false;
   std::cout << YELLOW << "P.I Lovers server is running..." << RESET << std::endl;
   while (!conected)
@@ -22,7 +21,6 @@ bool Server::serverIntermediate_UDP()
   Socket *intermediate;
   int numBytes;
   char buffer[BUFFER_SIZE];
-  char *message = (char *)"Connection request";
   struct sockaddr_in intermediateInfo;
   intermediate = new Socket('d');
   memset(&intermediateInfo, 0, sizeof(intermediateInfo));
@@ -48,7 +46,6 @@ bool Server::listenIntermediateUDP()
   int tries = 0;
   intermediate->Bind(UDP_PORT);
   char buffer[BUFFER_SIZE];
-  char *message = (char *)"Connection accepted";
   memset(&serverInfo, 0, sizeof(serverInfo));
   // std::cout << "Server is running" << std::endl;
   while (bytesReceived <= 0 && tries < 5)
@@ -147,8 +144,7 @@ std::string Server::getIPAddress()
   return ""; // Return an empty string if no IP address was found
 }
 
-void Server::listenIntermediateTCP()
-{
+void Server::listenIntermediateTCP() {
   std::thread *thread_TCP;
   VSocket *server, *intermediate;
   server = new Socket('s');
@@ -165,8 +161,7 @@ void Server::listenIntermediateTCP()
 }
 
 // todo: Hacer qudevuelva el html solicitado
-void Server::responseTCP(void *socket)
-{
+void Server::responseTCP(void *socket) {
   char request[BUFFER_SIZE];
   char *response = (char *)"TCP connection accepted";
   VSocket *intermediate = (VSocket *)socket;

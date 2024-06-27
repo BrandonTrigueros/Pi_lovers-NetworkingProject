@@ -51,7 +51,7 @@ class Intermediate {
   std::string buildRequest(const char*, int);
 
   std::vector<std::string> split(const std::string &s, char delimiter);
-  void actTable(std::string);
+  void updateTable(std::string);
   void addPiece(std::string);
   void deletePiece(std::string);
   void parseTable();
