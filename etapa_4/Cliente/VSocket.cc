@@ -12,24 +12,9 @@
  *  Grupos: 2 y 3
  *
  * (versión Fedora)
- *zzzzzy
  **/
 
-#include <cstddef>
-#include <cstdio>
-#include <cstring>  // memset
-#include <iostream>
-#include <stdexcept>
-
-#include <arpa/inet.h>  // ntohs
-#include <sys/socket.h>
-#include <unistd.h>  // close
-// #include <sys/types.h>
-#include <arpa/inet.h>
-#include <netdb.h>  // getaddrinfo, freeaddrinfo
-
 #include "VSocket.h"
-
 
 void VSocket::InitVSocket(char t, bool IPv6) {
   int st;
@@ -44,7 +29,6 @@ void VSocket::InitVSocket(char t, bool IPv6) {
   this->idSocket = st;
   this->IPv6 = IPv6;
 }
-
 
 void VSocket::InitVSocket(int id) {
   struct sockaddr_in address;
@@ -61,9 +45,7 @@ void VSocket::InitVSocket(int id) {
   // this->IPv6 = false;
 }
 
-
 VSocket::~VSocket() { this->Close(); }
-
 
 void VSocket::Close() {
   // if its already closed, return
@@ -77,7 +59,6 @@ void VSocket::Close() {
     throw std::runtime_error("VSocket::Close");
   }
 }
-
 
 int VSocket::DoConnect(const char* hostip, int port) {
   int st;
@@ -120,9 +101,9 @@ int VSocket::DoConnect(const char* hostip, const char* service) {
   return st;
 }
 
-
 int VSocket::Bind(int port) {
   int st;
+  this->port = port;
   if (this->IPv6) {
     struct sockaddr_in6 server;
     memset(&server, 0, sizeof(server));
@@ -146,7 +127,6 @@ int VSocket::Bind(int port) {
   return st;
 }
 
-
 int VSocket::Listen(int queue_len) {
   int st = -1;
   st = listen(this->idSocket, queue_len);
@@ -156,16 +136,15 @@ int VSocket::Listen(int queue_len) {
   return st;
 }
 
-
 int VSocket::DoAccept() {
-  int st = -1;
-  st = accept(this->idSocket, NULL, NULL);
+  struct sockaddr_in address;
+  socklen_t len;
+  int st = accept(this->idSocket, (struct sockaddr*)&address, &len);
   if (st == -1) {
     throw std::runtime_error("VSocket::DoAccept()");
   }
   return st;
 }
-
 
 int VSocket::Shutdown(int mode) {
   int st = -1;
@@ -177,11 +156,10 @@ int VSocket::Shutdown(int mode) {
 }
 
 size_t VSocket::sendTo(const void* buffer, size_t size, void* addr) {
-  int st = -1;
   socklen_t addr_len;
   this->IPv6 ? addr_len = sizeof(struct sockaddr_in6)
              : addr_len = sizeof(struct sockaddr_in);
-  st = sendto(
+  int st = sendto(
       this->idSocket, buffer, size, 0, (struct sockaddr*)addr, addr_len);
   if (-1 == st) {
     throw std::runtime_error("VSocket::sendTo");

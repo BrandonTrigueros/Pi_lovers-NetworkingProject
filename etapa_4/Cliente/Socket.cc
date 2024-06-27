@@ -4,15 +4,6 @@
  *
  **/
 
-#include <arpa/inet.h>  // for inet_pton
-#include <stdexcept>  // for runtime_error
-#include <stdio.h>  // for perror
-#include <stdlib.h>  // for exit
-#include <string.h>  // for memset
-#include <sys/socket.h>
-#include <sys/types.h>  // for connect
-#include <unistd.h>  // for write
-
 #include "Socket.h"
 
 /**

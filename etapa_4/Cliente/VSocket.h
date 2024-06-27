@@ -8,11 +8,23 @@
  * (versión Fedora)
  *
  **/
-
-#include <cstddef>
-
 #ifndef VSocket_h
 #define VSocket_h
+
+#include <cstddef>
+#include <cstdio>
+#include <cstring>  // memset
+#include <iostream>
+#include <stdexcept>
+
+#include <arpa/inet.h>  // ntohs
+#include <sys/socket.h>
+#include <unistd.h>  // close
+// #include <sys/types.h>
+#include <arpa/inet.h>
+#include <cstddef>
+#include <netdb.h>  // getaddrinfo, freeaddrinfo
+
 
 class VSocket {
   protected:
