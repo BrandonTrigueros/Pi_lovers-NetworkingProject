@@ -36,23 +36,42 @@ void Intermedio::addPiece(std::string piece) {
         }
     }
     route_table += "$";  // Asegurar el formato de cierre
-
-    // Imprimir la tabla actualizada
-    std::cout << "Tabla actualizada: " << route_table << std::endl;
 }
 
 void Intermedio::deletePiece(std::string piece) {
- 
+  std::vector<std::string> parts = split(piece, '@');
+  if (parts.size() < 2) {
+    std::cerr << "Invalid piece format" << std::endl;
+    return;
+  }
+  std::string figura = parts[0];
+  std::string ip = parts[1];
+  // Si la figura ya existe, solo agregar la IP
+  auto it = pieces_map.find(figura);
+  if (it != pieces_map.end()) {
+    auto& ips = it->second;
+    ips.erase(std::remove(ips.begin(), ips.end(), ip), ips.end());
+    if (ips.empty()) {
+      pieces_map.erase(it);
+    }
+  } else {
+    std::cerr << "Error: Intentando eliminar una figura inexistente" << std::endl;
+  }
+  // Reconstruir el route_table
+    route_table.clear();
+    for (const auto& pair : pieces_map) {
+        route_table += "$" + pair.first;
+        for (const std::string& ip : pair.second) {
+            route_table += "@" + ip;
+        }
+    }
+    route_table += "$";  // Asegurar el formato de cierre
 }
 
 void Intermedio::parseTable() {
   this->pieces_map.clear();
   // Separa la tabla por los '$'
   std::vector<std::string> segmentos = split(this->route_table, '$');
-  for (unsigned long i = 0; i < segmentos.size(); i++) {
-    std::cout << segmentos[i] << std::endl;
-  }
-
   for (const std::string& segmento : segmentos) {
     if (!segmento.empty()) {
       // Separa cada segmento por los '@'
@@ -67,7 +86,14 @@ void Intermedio::parseTable() {
       }
     }
   }
+}
 
+void Intermedio::actTable(std::string nuevaTabla) {
+  this->route_table = nuevaTabla;
+  this->parseTable();
+}
+
+void Intermedio::printTable() {
   for (const auto& pair : this->pieces_map) {
     std::cout << "Figura: " << pair.first << std::endl;
     std::cout << "IPs: ";
@@ -76,9 +102,4 @@ void Intermedio::parseTable() {
     }
     std::cout << std::endl;
   }
-}
-
-void Intermedio::actTable(std::string nuevaTabla) {
-  this->route_table = nuevaTabla;
-  this->parseTable();
 }

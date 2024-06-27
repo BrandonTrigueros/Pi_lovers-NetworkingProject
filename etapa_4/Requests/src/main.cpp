@@ -9,9 +9,16 @@ int main() {
   std::map<std::string, std::vector<std::string>> pieces_map;
   Intermedio myIntermedio;
   myIntermedio.actTable(route_table);
+  myIntermedio.printTable();
   std::cout << "Agregando la siguiente pieza: bete@777.777.777.777" << std::endl;
   myIntermedio.addPiece("bete@777.777.777.777");
   std::cout << "Agregando la siguiente pieza: dragon1@666.666.666.666" << std::endl;
   myIntermedio.addPiece("dragon1@666.666.666.666");
+  myIntermedio.printTable();
+  std::cout << "Eliminando la siguiente pieza: dragon1@000.000.000.000" << std::endl;
+  myIntermedio.deletePiece("dragon1@000.000.000.000");
+  std::cout << "Eliminando la siguiente pieza: dragon1@666.666.666.666" << std::endl;
+  myIntermedio.deletePiece("dragon1@666.666.666.666");
+  myIntermedio.printTable();
   return 0;
 }
