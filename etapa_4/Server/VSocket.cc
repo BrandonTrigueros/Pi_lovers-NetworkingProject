@@ -6,6 +6,18 @@ void VSocket::InitVSocket(char t, bool IPv6) {
   int domain = this->IPv6 ? AF_INET6 : AF_INET;
   int type = t == 's' ? SOCK_STREAM : SOCK_DGRAM;
   this->idSocket = socket(domain, type, 0);
+  int timeout_sec = 5;
+  struct timeval timeout;
+  timeout.tv_sec = timeout_sec;
+  timeout.tv_usec = 0;
+  if (setsockopt(this->idSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
+    perror("Timeout set failed\n");
+    this->Close();
+  }
+  int optval = 1;
+  if (setsockopt(this->idSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
+    perror("setsockopt");
+  }
 }
 
 void VSocket::InitVSocket(int id) { this->idSocket = id; }
@@ -117,8 +129,5 @@ size_t VSocket::recvFrom(void* buffer, size_t size, void* addr) {
   socklen_t addrlen = sizeof(*((sockaddr*)addr));
   int recv_result
       = recvfrom(this->idSocket, buffer, size, 0, (sockaddr*)addr, &addrlen);
-  if (-1 == recv_result) {
-    throw(std::runtime_error("VSocket::recvFrom()"));
-  }
   return recv_result;
 }

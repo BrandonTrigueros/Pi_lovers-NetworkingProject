@@ -15,8 +15,9 @@ void Intermediate::run()
   // ! <---------------------------------- Requests TCP -------------------------------------->
   // ListenClient()
   // SendRequest();
-  
-  if (!intermediateServer_UDP()) {
+
+  if (!intermediateServer_UDP())
+  {
     listenServerUDP();
   }
 
@@ -55,7 +56,8 @@ void Intermediate::handleClient(void *socket, std::map<std::string, std::vector<
   std::string partOne, partTwo, partOneIP, partTwoIP, response;
   std::string requestStr(request);
   std::string figure = requestStr.substr(5, requestStr.find_last_of('/') - 6);
-  partOne = figure + "0"; partTwo = figure + "1";
+  partOne = figure + "0";
+  partTwo = figure + "1";
   // ip1 = this->routingTable[p1][0];
   // ip2 = this->routingTable[p2][0];
   // if (ip1 == this->ipDirection) {
@@ -82,7 +84,8 @@ void Intermediate::listenIntermediateBroadcast()
 {
   //! Ni idea aun de como entrarle a esto
 }
-int Intermediate::broadcastNewServer() {
+int Intermediate::broadcastNewServer()
+{
   //! Ni idea aun de como entrarle a esto x2
   return 0;
 }
@@ -105,6 +108,7 @@ bool Intermediate::intermediateServer_UDP()
       (void *)message, strlen(message), (void *)&intermediateInfo);
   numBytes = intermediate->recvFrom(
       (void *)buffer, BUFFER_SIZE, (void *)&intermediateInfo);
+  std::cout << "Received data: " << buffer << std::endl;
   buffer[numBytes] = '\0';
   intermediate->Close();
   return numBytes <= 0 ? false : true;
@@ -117,20 +121,24 @@ bool Intermediate::intermediateServer_UDP()
   // //! RESPUESTA CAPTURADA EN ATRIBUTO KNOWNPIECES
 }
 
-void Intermediate::listenServerUDP() {
+void Intermediate::listenServerUDP()
+{
   std::cout << "Waiting for server..." << std::endl;
   int bytesReceived = 0;
-  struct sockaddr serverInfo;
+  struct sockaddr_in serverInfo;
   VSocket *intermediate = new Socket('d', false);
   intermediate->Bind(UDP_PORT_SERVER);
   char buffer[BUFFER_SIZE];
   char *message = (char *)"Connection accepted";
   memset(&serverInfo, 0, sizeof(serverInfo));
-  while (bytesReceived <= 0) {
+  while (bytesReceived <= 0)
+  {
+    char *ipDirection = inet_ntoa(serverInfo.sin_addr);
+    std::cout << "Server IP: " << ipDirection << std::endl;
     std::cout << "I'm listening" << std::endl;
     bytesReceived = intermediate->recvFrom((void *)buffer, BUFFER_SIZE, (void *)&serverInfo);
   }
-  
+
   std::cout << "Received data: " << buffer << std::endl;
   intermediate->sendTo((void *)message, strlen(message), (void *)&serverInfo);
   std::cout << "Sent data: " << message << std::endl;
@@ -152,7 +160,6 @@ void Intermediate::listenServerUDP() {
 //   //? Server devolverá acá el html? Deberíamos devolverlo com valor de retorno?
 // }
 
-
 bool Intermediate::verifyRequest()
 {
   bool firstPart = false;
@@ -160,21 +167,28 @@ bool Intermediate::verifyRequest()
   bool isAvailable = false; // Assumes that the figure isn't available
   std::string requestedFigure = "";
 
-  for (const auto& [legoFigure, ipAddresses] : this->routingTable) {
+  for (const auto &[legoFigure, ipAddresses] : this->routingTable)
+  {
     std::cout << "Figure: " << legoFigure << std::endl;
-    for (const std::string& ipAddress : ipAddresses) {
-      if ((legoFigure == (requestedFigure + "0")) && ipAddress != "") {
+    for (const std::string &ipAddress : ipAddresses)
+    {
+      if ((legoFigure == (requestedFigure + "0")) && ipAddress != "")
+      {
         firstPart = true;
-      } else if ((legoFigure == (requestedFigure + "1")) && ipAddress != "") {
+      }
+      else if ((legoFigure == (requestedFigure + "1")) && ipAddress != "")
+      {
         secondPart = true;
       }
 
-      if (firstPart && secondPart) {
+      if (firstPart && secondPart)
+      {
         isAvailable = true;
         break;
       }
     }
-    if (isAvailable) {
+    if (isAvailable)
+    {
       break;
     }
   }
