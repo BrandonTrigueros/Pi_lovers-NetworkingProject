@@ -3,9 +3,11 @@
 
 #include "Socket.h"
 #include "VSocket.h"
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <sstream>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -29,6 +31,8 @@ class Intermediate {
   void run();
 
   private:
+  std::string route_table;
+  std::map<std::string, std::vector<std::string>> pieces_map;
   // client
   void listenClients();
   static void handleClient(void*, std::map<std::string, std::vector<std::string>>);
@@ -45,6 +49,13 @@ class Intermediate {
 
   bool verifyRequest();
   std::string buildRequest(const char*, int);
+
+  std::vector<std::string> split(const std::string &s, char delimiter);
+  void actTable(std::string);
+  void addPiece(std::string);
+  void deletePiece(std::string);
+  void parseTable();
+  void printTable();
 
   // void sendTCP();
   // void receiveTCP();
