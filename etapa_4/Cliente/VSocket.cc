@@ -28,6 +28,10 @@ void VSocket::InitVSocket(char t, bool IPv6) {
   }
   this->idSocket = st;
   this->IPv6 = IPv6;
+  int optval = 1;
+  if (setsockopt(this->idSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
+    perror("setsockopt");
+  }
 }
 
 void VSocket::InitVSocket(int id) {

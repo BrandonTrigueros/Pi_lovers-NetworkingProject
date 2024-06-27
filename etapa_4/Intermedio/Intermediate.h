@@ -19,8 +19,8 @@
 
 class Intermediate {
   private:
-  std::vector<std::string> knownPieces;
-  std::map<std::string, std::vector<std::string>> routingTable;  // figura, ips
+  std::vector<std::string> knownPieces; // Map with the figures of our server
+  std::map<std::string, std::vector<std::string>> routingTable; // Map that contains figure and IP
   std::string ipDirection;
 
   public:
@@ -31,16 +31,19 @@ class Intermediate {
   private:
   // client
   void listenClients();
-  void handleClient(void*);
+  static void handleClient(void*, std::map<std::string, std::vector<std::string>>);
 
   // intermediate
-  void listenIntermidiateBroadcast();
+  void listenIntermediateBroadcast();
   int broadcastNewServer();
 
   // server
-  void intermediateServer_UDP();
+  bool intermediateServer_UDP();
+  void listenServerUDP();
 
   void sendTCPRequest(const char*, int);
+
+  bool verifyRequest();
   std::string buildRequest(const char*, int);
 
   // void sendTCP();

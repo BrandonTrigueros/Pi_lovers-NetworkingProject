@@ -6,7 +6,7 @@ void VSocket::InitVSocket(char t, bool IPv6) {
   int domain = this->IPv6 ? AF_INET6 : AF_INET;
   int type = t == 's' ? SOCK_STREAM : SOCK_DGRAM;
   this->idSocket = socket(domain, type, 0);
-  int timeout_sec = 3;
+  int timeout_sec = 5;
   struct timeval timeout;
   timeout.tv_sec = timeout_sec;
   timeout.tv_usec = 0;
@@ -15,6 +15,12 @@ void VSocket::InitVSocket(char t, bool IPv6) {
       < 0) {
     perror("Timeout set failed\n");
     this->Close();
+  }
+  int optval = 1;
+  if (setsockopt(
+          this->idSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval))
+      < 0) {
+    perror("setsockopt");
   }
 }
 
@@ -124,6 +130,10 @@ size_t VSocket::sendTo(const void* buffer, size_t size, void* addr) {
 }
 
 size_t VSocket::recvFrom(void* buffer, size_t size, void* addr) {
+  /*
+    ToDo: can we add here the timeout? cause having it in all the socket
+      is causing problems when we have to use the listen();
+  */
   socklen_t addrlen = sizeof(*((sockaddr*)addr));
 
   int recv_result

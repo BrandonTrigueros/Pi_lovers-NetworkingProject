@@ -2,62 +2,76 @@
 
 Intermediate::Intermediate() { this->ipDirection = "127.0.0.1"; }
 
-Intermediate::~Intermediate() { }
+Intermediate::~Intermediate() {}
 
-void Intermediate::run() {
+void Intermediate::run()
+{
+  // ! <--------------------------------- Tabla de ruteo y UDP  ----------------------------->
+  // requestPieces
+
+  // Connectintermediates
+  // ListenServer -> Solo si no esta conectado a su server
+  // ListenIntermediates
+  // ! <---------------------------------- Requests TCP -------------------------------------->
+  // ListenClient()
+  // SendRequest();
+
+  if (!intermediateServer_UDP())
+  {
+    listenServerUDP();
+  }
+
   // Al levantarse lo primero que hacemos es escuchar por UDP
-  listenIntermidiateBroadcast();
-  // Se trata de establecer una conexión con el servidor de piezas
-  intermediateServer_UDP();
+  // listenIntermediateBroadcast();
   // Se envía por broadcast las piezas al resto de intermediarios
-  broadcastNewServer();
+  // broadcastNewServer();
   // Se comienza a escuchar requests de los clientes
-  listenClients();
-
-  //? Que hace el intermedio aparte de handlear requests?
-  // while (true) {
-  //   sendTCPRequest(this->requestQueue);
-  // }
+  // listenClients();
 }
 
-void Intermediate::listenClients() {
-  std::thread* worker;
+void Intermediate::listenClients()
+{
+  std::thread *worker;
   VSocket *intermediateSocket, *client;
   intermediateSocket = new Socket('s');
   intermediateSocket->Bind(CLIENT_PORT);
   intermediateSocket->Listen(5);
-  while (true) {
+  while (true)
+  {
     client = intermediateSocket->Accept();
-    worker = new std::thread(handleClient, (void*)client);
+    worker = new std::thread(handleClient, (void *)client, this->routingTable);
   }
   worker->join();
 }
 
-void Intermediate::handleClient(void* socket) {
+void Intermediate::handleClient(void *socket, std::map<std::string, std::vector<std::string>> routingTable)
+{
+  std::cout << "I'm in handle client" << std::endl;
   char request[BUFFER_SIZE];
-  std::string p1, p2, ip1, ip2, response;
-  Socket* client = (Socket*)socket;
+  Socket *client = (Socket *)socket;
   client->Read(request, BUFFER_SIZE);
 
   //! MANEJO DE LA REQUEST
+  std::map<std::string, std::vector<std::string>> routingTableRef = routingTable;
+  std::string partOne, partTwo, partOneIP, partTwoIP, response;
   std::string requestStr(request);
   std::string figure = requestStr.substr(5, requestStr.find_last_of('/') - 6);
-  p1 = figure + "1";
-  p2 = figure + "2";
-  ip1 = this->routingTable[p1][0];
-  ip2 = this->routingTable[p2][0];
-  if (ip1 == this->ipDirection) {
-    //? Que acá se capture el html en un string
-    sendTCPRequest(figure.c_str(), 1);
-  } else {
-    // Create thread with socket to search for the piece
-  }
-  if (ip2 == this->ipDirection) {
-    //? Que acá se capture el html en un string
-    sendTCPRequest(figure.c_str(), 2);
-  } else {
-    // Create thread with socket to search for the piece
-  }
+  partOne = figure + "0";
+  partTwo = figure + "1";
+  // ip1 = this->routingTable[p1][0];
+  // ip2 = this->routingTable[p2][0];
+  // if (ip1 == this->ipDirection) {
+  //   //? Que acá se capture el html en un string
+  //   sendTCPRequest(figure.c_str(), 1);
+  // } else {
+  //   // Create thread with socket to search for the piece
+  // }
+  // if (ip2 == this->ipDirection) {
+  //   //? Que acá se capture el html en un string
+  //   sendTCPRequest(figure.c_str(), 2);
+  // } else {
+  //   // Create thread with socket to search for the piece
+  // }
 
   //? Cuando se tienen ambos, se castean a html, se crea la response y se manda
 
@@ -66,18 +80,22 @@ void Intermediate::handleClient(void* socket) {
   //! REQUEST MANEJADA
 }
 
-void Intermediate::listenIntermidiateBroadcast() {
+void Intermediate::listenIntermediateBroadcast()
+{
   //! Ni idea aun de como entrarle a esto
 }
-int Intermediate::broadcastNewServer() {
+int Intermediate::broadcastNewServer()
+{
   //! Ni idea aun de como entrarle a esto x2
+  return 0;
 }
 
-void Intermediate::intermediateServer_UDP() {
-  Socket* intermediate;
+bool Intermediate::intermediateServer_UDP()
+{
+  Socket *intermediate;
   int numBytes;
   char buffer[BUFFER_SIZE];
-  char* message = (char*)"Connection request";
+  char *message = (char *)"Connection request";
   struct sockaddr_in intermediateInfo;
   intermediate = new Socket('d');
   memset(&intermediateInfo, 0, sizeof(intermediateInfo));
@@ -85,42 +103,101 @@ void Intermediate::intermediateServer_UDP() {
   intermediateInfo.sin_port = htons(UDP_PORT_SERVER);
   intermediateInfo.sin_addr.s_addr = INADDR_ANY;
 
-  bool isConnected = false;
-  while (!isConnected) {
-    numBytes = intermediate->sendTo(
-        (void*)message, strlen(message), (void*)&intermediateInfo);
-    numBytes = intermediate->recvFrom(
-        (void*)buffer, BUFFER_SIZE, (void*)&intermediateInfo);
-    buffer[numBytes] = '\0';
-    if (numBytes > 0) {
-      isConnected = true;
+  std::cout << "Message: " << message << std::endl;
+  numBytes = intermediate->sendTo(
+      (void *)message, strlen(message), (void *)&intermediateInfo);
+  numBytes = intermediate->recvFrom(
+      (void *)buffer, BUFFER_SIZE, (void *)&intermediateInfo);
+  std::cout << "Received data: " << buffer << std::endl;
+  buffer[numBytes] = '\0';
+  intermediate->Close();
+  return numBytes <= 0 ? false : true;
+  // //! CAPTURAR RESPUESTA DEL SERVER (PIEZAS CONOCIDAS)
+  // std::stringstream ss(buffer);
+  // std::string item;
+  // while (std::getline(ss, item, ',')) {
+  //   knownPieces.push_back(item);
+  // }
+  // //! RESPUESTA CAPTURADA EN ATRIBUTO KNOWNPIECES
+}
+
+void Intermediate::listenServerUDP()
+{
+  std::cout << "Waiting for server..." << std::endl;
+  int bytesReceived = 0;
+  struct sockaddr_in serverInfo;
+  VSocket *intermediate = new Socket('d', false);
+  intermediate->Bind(UDP_PORT_SERVER);
+  char buffer[BUFFER_SIZE];
+  char *message = (char *)"Connection accepted";
+  memset(&serverInfo, 0, sizeof(serverInfo));
+  while (bytesReceived <= 0)
+  {
+    char *ipDirection = inet_ntoa(serverInfo.sin_addr);
+    std::cout << "Server IP: " << ipDirection << std::endl;
+    std::cout << "I'm listening" << std::endl;
+    bytesReceived = intermediate->recvFrom((void *)buffer, BUFFER_SIZE, (void *)&serverInfo);
+  }
+
+  std::cout << "Received data: " << buffer << std::endl;
+  intermediate->sendTo((void *)message, strlen(message), (void *)&serverInfo);
+  std::cout << "Sent data: " << message << std::endl;
+  intermediate->Close();
+}
+
+// void Intermediate::sendTCPRequest(const char *figureName, int figurePart)
+// {
+//   char buffer[BUFFER_SIZE];
+//   Socket *intermediateSocket = new Socket('s', false);
+//   const char *figureRequest = (buildRequest(figureName, figurePart)).c_str();
+
+//   //? La ip debería ser la del servidor de piezas?
+//   intermediateSocket->Connect(this->ipDirection.c_str(), TCP_PORT_SERVER);
+
+//   intermediateSocket->Write(figureRequest, strlen(figureRequest));
+//   intermediateSocket->Read(buffer, BUFFER_SIZE);
+//   intermediateSocket->Close();
+//   //? Server devolverá acá el html? Deberíamos devolverlo com valor de retorno?
+// }
+
+bool Intermediate::verifyRequest()
+{
+  bool firstPart = false;
+  bool secondPart = false;
+  bool isAvailable = false; // Assumes that the figure isn't available
+  std::string requestedFigure = "";
+
+  for (const auto &[legoFigure, ipAddresses] : this->routingTable)
+  {
+    std::cout << "Figure: " << legoFigure << std::endl;
+    for (const std::string &ipAddress : ipAddresses)
+    {
+      if ((legoFigure == (requestedFigure + "0")) && ipAddress != "")
+      {
+        firstPart = true;
+      }
+      else if ((legoFigure == (requestedFigure + "1")) && ipAddress != "")
+      {
+        secondPart = true;
+      }
+
+      if (firstPart && secondPart)
+      {
+        isAvailable = true;
+        break;
+      }
+    }
+    if (isAvailable)
+    {
+      break;
     }
   }
-  intermediate->Close();
-  //! CAPTURAR RESPUESTA DEL SERVER (PIEZAS CONOCIDAS)
-  std::stringstream ss(buffer);
-  std::string item;
-  while (std::getline(ss, item, ',')) {
-    knownPieces.push_back(item);
-  }
-  //! RESPUESTA CAPTURADA EN ATRIBUTO KNOWNPIECES
+
+  return isAvailable;
 }
 
-void Intermediate::sendTCPRequest(const char* figureName, int figurePart) {
-  char buffer[BUFFER_SIZE];
-  Socket* intermediateSocket = new Socket('s', false);
-  const char* figureRequest = (buildRequest(figureName, figurePart)).c_str();
-
-  //? La ip debería ser la del servidor de piezas?
-  intermediateSocket->Connect(this->ipDirection.c_str(), TCP_PORT_SERVER);
-
-  intermediateSocket->Write(figureRequest, strlen(figureRequest));
-  intermediateSocket->Read(buffer, BUFFER_SIZE);
-  intermediateSocket->Close();
-  //? Server devolverá acá el html? Deberíamos devolverlo com valor de retorno?
-}
-
-std::string Intermediate::buildRequest(const char* figureName, int figurePart) {
+std::string Intermediate::buildRequest(const char *figureName, int figurePart)
+{
   std::string legoFigure(figureName);
   std::string request = "GET / ";
   request += legoFigure + "%" + std::to_string(figurePart) + "//HTTP\r\n\r\n";

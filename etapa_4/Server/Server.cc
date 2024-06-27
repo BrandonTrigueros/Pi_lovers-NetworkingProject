@@ -1,77 +1,178 @@
 #include "Server.h"
 
-void Server::run() {
-  std::thread *worker_UDP, *worker_TCP;
-  worker_UDP = new std::thread(listenIntermediateUDP);
-  worker_TCP = new std::thread(listenIntermediateTCP);
-  worker_TCP->join();
-  worker_UDP->join();
+void Server::run()
+{
+  scanExistingPieces();
+  concatFigures();
+
+  bool conected = false;
+  std::cout << YELLOW << "P.I Lovers server is running..." << RESET << std::endl;
+  while (!conected)
+  {
+    conected = serverIntermediate_UDP();
+    if (!conected)
+    {
+      conected = listenIntermediateUDP();
+    }
+  }
 }
 
-void Server::listenIntermediateUDP() {
-  int st;
-  char ip[BUFFER_SIZE];
+bool Server::serverIntermediate_UDP()
+{
+  Socket *intermediate;
+  int numBytes;
   char buffer[BUFFER_SIZE];
-  std::string message = "";
-  Socket* intermediate = new Socket('d', false);
+  char *message = (char *)"Connection request";
+  struct sockaddr_in intermediateInfo;
+  intermediate = new Socket('d');
+  memset(&intermediateInfo, 0, sizeof(intermediateInfo));
+  intermediateInfo.sin_family = AF_INET;
+  intermediateInfo.sin_port = htons(UDP_PORT);
+  intermediateInfo.sin_addr.s_addr = INADDR_ANY;
+  numBytes = intermediate->sendTo(
+      (void *)this->myLegoFigures.c_str(), strlen(this->myLegoFigures.c_str()), (void *)&intermediateInfo);
+  numBytes = intermediate->recvFrom(
+      (void *)buffer, BUFFER_SIZE, (void *)&intermediateInfo);
+  buffer[numBytes] = '\0';
+  intermediate->Close();
+  return numBytes <= 0 ? false : true;
+}
+
+bool Server::listenIntermediateUDP()
+{
+  // std::cout << "Waiting for intermediate..." << std::endl;
   struct sockaddr serverInfo;
-  memset(&serverInfo, 0, sizeof(serverInfo));
+  VSocket *intermediate = new Socket('d', false);
+  bool isConected = false;
+  int bytesReceived = 0;
+  int tries = 0;
   intermediate->Bind(UDP_PORT);
-  while (true) {
-    st = intermediate->recvFrom((void*)buffer, BUFFER_SIZE, (void*)&serverInfo);
-    if (st > 0) {
-      // Concatenar IP al mensaje
-      struct sockaddr_in& serverInfo = *(struct sockaddr_in*)&serverInfo;
-      inet_ntop(AF_INET, &(serverInfo.sin_addr), ip, BUFFER_SIZE);
-      message = (char*)ip + std::string(":");
-      // Concatenar piezas conocidas al mensaje
-      scanExistingPieces();
-      for (const auto& piece : this->serverPieces) {
-        message += piece + ",";
-      }
-      // Enviar mensaje
-      intermediate->sendTo(
-          (void*)message.c_str(), strlen(message.c_str()), (void*)&serverInfo);
-    }
-    intermediate->Close();
+  char buffer[BUFFER_SIZE];
+  char *message = (char *)"Connection accepted";
+  memset(&serverInfo, 0, sizeof(serverInfo));
+  // std::cout << "Server is running" << std::endl;
+  while (bytesReceived <= 0 && tries < 5)
+  {
+    // std::cout << "Tries: " << tries << std::endl;
+    // std::cout << "I'm listening" << std::endl;
+    bytesReceived = intermediate->recvFrom((void *)buffer, BUFFER_SIZE, (void *)&serverInfo);
+    // std::cout << "Received data: " << buffer << std::endl;
+    tries++;
   }
+
+  if (bytesReceived > 0)
+  {
+    intermediate->sendTo((void *)this->myLegoFigures.c_str(), strlen(this->myLegoFigures.c_str()), (void *)&serverInfo);
+    // std::cout << "Sent data: " << message << std::endl;
+    isConected = true;
+    // for (const auto &pieces : this->serverPieces)
+    // {
+    //   std::cout << "Piece: " << pieces << std::endl;
+    // }
+  }
+  intermediate->Close();
+  return isConected;
 }
 
-void Server::scanExistingPieces() {
+void Server::scanExistingPieces()
+{
   std::string directoryPath = "./Legos";
-  if (!std::filesystem::exists(directoryPath)) {
-    std::cerr << "El directorio no existe: " << directoryPath << std::endl;
+  if (!std::filesystem::exists(directoryPath))
+  {
+    std::cerr << "The directory doesn't exist: " << directoryPath << std::endl;
+    return;
   }
-  for (const auto& entry : std::filesystem::directory_iterator(directoryPath)) {
-    if (entry.is_regular_file() && entry.path().extension() == ".html") {
-      this->serverPieces.push_back(entry.path().filename().string());
+
+  for (const auto &entry : std::filesystem::directory_iterator(directoryPath))
+  {
+    if (entry.is_regular_file())
+    {
+      std::string filename = entry.path().filename().string();
+      size_t dotPos = filename.rfind('.');
+      if (dotPos == std::string::npos)
+      {
+        this->serverPieces.push_back(filename);
+      }
+      else
+      {
+        std::string filenameWithoutExt = filename.substr(0, dotPos);
+        this->serverPieces.push_back(filenameWithoutExt);
+      }
     }
   }
 }
 
-void Server::listenIntermediateTCP() {
-  std::thread* thread_TCP;
+void Server::concatFigures()
+{
+  std::string ipAddress = getIPAddress();
+  // std::cout << "IP: " << ipAddress << std::endl;
+  for (unsigned int i = 0; i < this->serverPieces.size(); i++)
+  {
+    this->myLegoFigures += "$" + this->serverPieces[i] + "@" + ipAddress;
+  }
+  // std::cout << "My data is: " << this->myLegoFigures << std::endl;
+}
+
+std::string Server::getIPAddress()
+{
+  char hostname[HOSTNAME_LENGTH];
+  hostname[HOSTNAME_LENGTH - 1] = '\0';       // Ensure the hostname array is null-terminated
+  gethostname(hostname, HOSTNAME_LENGTH - 1); // Retrieve the hostname of the local machine
+
+  struct addrinfo hints, *res, *p;
+  int status;
+  char ipstr[INET_ADDRSTRLEN]; // Buffer to hold the IPv4 address as a string
+
+  memset(&hints, 0, sizeof hints); // Zero out the hints structure
+  hints.ai_family = AF_INET;       // Specify that we want IPv4 addresses
+  hints.ai_socktype = SOCK_STREAM; // Specify a stream socket (TCP)
+
+  // Get address information for the hostname
+  if ((status = getaddrinfo(hostname, NULL, &hints, &res)) != 0)
+  {
+    std::cerr << "getaddrinfo: " << gai_strerror(status) << std::endl; // Print error message
+    return "";                                                         // Return an empty string on error
+  }
+
+  // Loop through the linked list of results
+  for (p = res; p != NULL; p = p->ai_next)
+  {
+    void *addr = &((struct sockaddr_in *)p->ai_addr)->sin_addr; // Cast the socket address to sockaddr_in and extract the IPv4 address
+    inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr); // Convert the binary IP address to a readable string
+    std::string ipAddress(ipstr); // Create a C++ string from the C-style string
+    freeaddrinfo(res); // Free the memory allocated for the address list
+    return ipAddress; // Return the IP address
+  }
+  freeaddrinfo(res); // Free the memory allocated for the address list in case the loop didn't run
+  return ""; // Return an empty string if no IP address was found
+}
+
+void Server::listenIntermediateTCP()
+{
+  std::thread *thread_TCP;
   VSocket *server, *intermediate;
   server = new Socket('s');
 
   server->Bind(TCP_PORT);
   server->Listen(5);
 
-  while (true) {
+  while (true)
+  {
     intermediate = server->Accept();
-    thread_TCP = new std::thread(responseTCP, (void*)intermediate);
+    thread_TCP = new std::thread(responseTCP, (void *)intermediate);
   }
   thread_TCP->join();
 }
 
 // todo: Hacer qudevuelva el html solicitado
-void Server::responseTCP(void* socket) {
+void Server::responseTCP(void *socket)
+{
   char request[BUFFER_SIZE];
-  char* response = (char*)"TCP connection accepted";
-  VSocket* intermediate = (VSocket*)socket;
+  char *response = (char *)"TCP connection accepted";
+  VSocket *intermediate = (VSocket *)socket;
   intermediate->Read(request, BUFFER_SIZE);
-  std::cout << "Received data: " << request << std::endl;
-  intermediate->Write((void*)response, strlen(response));
-  std::cout << "Sent data: " << response << std::endl;
+  // std::cout << "Received data: " << request << std::endl;
+  intermediate->Write((void *)response, strlen(response));
+  // std::cout << "Sent data: " << response << std::endl;
   intermediate->Close();
 }
