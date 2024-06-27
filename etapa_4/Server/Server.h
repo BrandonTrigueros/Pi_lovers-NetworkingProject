@@ -12,6 +12,9 @@
 #define UDP_PORT 4400
 #define BUFFER_SIZE 512
 
+#define YELLOW "\033[33m"
+#define RESET "\033[0m"
+
 class Server {
   private:
   char* userRequest;
@@ -24,9 +27,11 @@ class Server {
   void run();
 
   private:
-  void listenIntermediateUDP();
+  bool listenIntermediateUDP();
+  bool serverIntermediate_UDP();
+  
   void scanExistingPieces();
-  void listenIntermediateTCP();
-  void responseTCP(void*);
+  static void listenIntermediateTCP();
+  static void responseTCP(void*);
 };
 #endif  // SERVER_H
