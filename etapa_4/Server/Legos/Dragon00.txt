@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dragon</title>
+  <style>
+    table {
+      width: 100%;
+    }
+
+    table, th, td {
+      border: 1px solid cornflowerblue;
+      border-collapse: collapse;
+      padding: 5px;
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+      font-size: medium;
+    }
+
+    td {
+      text-align: center;
+    }
+
+    th {
+      color: darkred;
+      background-color: aliceblue;
+      text-align: center;
+    }
+
+    tr:nth-child(even) {
+      background-color: gainsboro;
+    }
+
+  </style>
+</head>
+<body>
+  <div>
+    <h2 style="text-align: center;"> Lista de piezas para armar la figura Dragon </h2>
+    <TABLE>
+      <TR> 
+        <TH> Cantidad </TH> 
+        <TH> Descripción </TH>  
+      </TR>
+      <TR> 
+        <TD ALIGN=center> 2</TD>
+        <TD ALIGN=center> brick 2x6 plate grey</TD>
+      </TR>
+      <TR>
+        <TD ALIGN=center> 3</TD>
+        <TD ALIGN=center> brick 2x4 grey</TD>
+      </TR>
+      <TR>
+        <TD ALIGN=center> 2</TD>
+        <TD ALIGN=center> brick 2x2 grey</TD>
+      </TR>
+      <TR>
+        <TD ALIGN=center> 1</TD>
+        <TD ALIGN=center> brick 2x2 slope inverted grey</TD>
+      </TR>
+      <TR>
+        <TD ALIGN=center> 1</TD>
+        <TD ALIGN=center> brick 2x8 red</TD>
+      </TR>
+      <TR>
+        <TD ALIGN=center> 2</TD>
+        <TD ALIGN=center> brick 2x2 slope red</TD>
+      </TR>
+      <TR>
+        <TD ALIGN=center> 1</TD>
+        <TD ALIGN=center> brick 2x2 slope inverted red</TD>
+      </TR>
+      <TR>
+        <TD style="text-align: left;"> Total de piezas para armar esta figura: 12</TD>
+      </TR>
+    </TABLE>
+  </div>    
+</body>
+</html>
