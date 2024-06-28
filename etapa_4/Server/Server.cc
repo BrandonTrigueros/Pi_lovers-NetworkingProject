@@ -14,6 +14,7 @@ void Server::run()
       conected = listenIntermediateUDP();
     }
   }
+  listenIntermediateTCP();
 }
 
 bool Server::serverIntermediate_UDP()
@@ -38,7 +39,6 @@ bool Server::serverIntermediate_UDP()
 
 bool Server::listenIntermediateUDP()
 {
-  // std::cout << "Waiting for intermediate..." << std::endl;
   struct sockaddr serverInfo;
   VSocket *intermediate = new Socket('d', false);
   bool isConected = false;
@@ -47,25 +47,16 @@ bool Server::listenIntermediateUDP()
   intermediate->Bind(UDP_PORT);
   char buffer[BUFFER_SIZE];
   memset(&serverInfo, 0, sizeof(serverInfo));
-  // std::cout << "Server is running" << std::endl;
   while (bytesReceived <= 0 && tries < 5)
   {
-    // std::cout << "Tries: " << tries << std::endl;
-    // std::cout << "I'm listening" << std::endl;
     bytesReceived = intermediate->recvFrom((void *)buffer, BUFFER_SIZE, (void *)&serverInfo);
-    // std::cout << "Received data: " << buffer << std::endl;
     tries++;
   }
 
   if (bytesReceived > 0)
   {
     intermediate->sendTo((void *)this->myLegoFigures.c_str(), strlen(this->myLegoFigures.c_str()), (void *)&serverInfo);
-    // std::cout << "Sent data: " << message << std::endl;
     isConected = true;
-    // for (const auto &pieces : this->serverPieces)
-    // {
-    //   std::cout << "Piece: " << pieces << std::endl;
-    // }
   }
   intermediate->Close();
   return isConected;
@@ -102,12 +93,10 @@ void Server::scanExistingPieces()
 void Server::concatFigures()
 {
   std::string ipAddress = getIPAddress();
-  // std::cout << "IP: " << ipAddress << std::endl;
   for (unsigned int i = 0; i < this->serverPieces.size(); i++)
   {
     this->myLegoFigures += "$" + this->serverPieces[i] + "@" + ipAddress;
   }
-  // std::cout << "My data is: " << this->myLegoFigures << std::endl;
 }
 
 std::string Server::getIPAddress()
