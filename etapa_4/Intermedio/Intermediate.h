@@ -40,11 +40,11 @@ class Intermediate {
   bool intermediateServer_UDP();
   void listenServerUDP();
 
-  static void sendTCPRequest(const char*, int, std::map<std::string, std::vector<std::string>>);
+  static void sendTCPRequest(std::string, std::string);
   static std::string getFigureIP(std::string, std::map<std::string, std::vector<std::string>>);
 
   static bool verifyRequest(std::string, std::map<std::string, std::vector<std::string>>);
-  static std::string buildRequest(const char*, int);
+  static std::string buildRequest(std::string);
 
   std::vector<std::string> split(const std::string &s, char delimiter);
   void updateTable(std::string);

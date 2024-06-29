@@ -144,6 +144,7 @@ void Server::listenIntermediateTCP() {
   {
     std::cout << "Im listening Intermediate" << std::endl;
     intermediate = server->Accept();
+    std::cout << "Intermediate connected" << std::endl;
     thread_TCP = new std::thread(responseTCP, (void *)intermediate);
   }
   thread_TCP->join();
@@ -155,6 +156,13 @@ void Server::responseTCP(void *socket) {
   char *response = (char *)"TCP connection accepted";
   VSocket *intermediate = (VSocket *)socket;
   intermediate->Read(request, BUFFER_SIZE);
+
+  std::string requestStr(request);
+  size_t firstSlashPos = requestStr.find_first_of('/');
+  size_t lastSlashPos = requestStr.find_first_of('/', firstSlashPos + 1);
+  std::string figureComment = requestStr.substr(firstSlashPos + 1, lastSlashPos - 5);
+  requestStr = figureComment;
+  std::cout << "Received request: " << requestStr << std::endl;
   // std::cout << "Received data: " << request << std::endl;
   intermediate->Write((void *)response, strlen(response));
   // std::cout << "Sent data: " << response << std::endl;

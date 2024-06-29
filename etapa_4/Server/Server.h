@@ -3,6 +3,7 @@
 
 #include "Socket.h"
 #include "VSocket.h"
+#include "FileManager.h"
 #include <filesystem>
 #include <iostream>
 #include <thread>
@@ -26,7 +27,7 @@ class Server {
   char* userRequest;
   std::vector<std::string> serverPieces;
   std::string myLegoFigures;
-  // Request queue
+  FileManager* fileManager;
 
   public:
   Server() = default;

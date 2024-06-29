@@ -53,23 +53,19 @@ void Intermediate::handleClient(void *socket, void* routingTableRef)
   Socket *client = (Socket *)socket;
   client->Read(request, BUFFER_SIZE);
 
-  //! MANEJO DE LA REQUEST
-  std::string partOne, partTwo, partOneIP, partTwoIP, response;
+  std::string response;
   std::string requestStr(request);
   size_t firstSlashPos = requestStr.find_first_of('/');
   size_t lastSlashPos = requestStr.find_first_of('/', firstSlashPos + 1);
   std::string figureComment = requestStr.substr(firstSlashPos + 1, lastSlashPos - 5);
   requestStr = figureComment;
-  // std::cout << "Figure is: " << requestStr << std::endl;
-
   if (verifyRequest(requestStr, routingTable))
   {
     std::cout << "Figure is available" << std::endl;
     for(int i = 0; i < 2; i++) {
       std::string figurePart = requestStr + std::to_string(i);
       std::string ipAddress = getFigureIP(figurePart, routingTable);
-      // sendTCPRequest(figurePart.c_str(), i, ipAddress);
-      // ToDo: send the request to the server
+      sendTCPRequest(figurePart, ipAddress);
     }
   }
   else
@@ -77,46 +73,21 @@ void Intermediate::handleClient(void *socket, void* routingTableRef)
     // ToDo: return ERROR 404
   }
 
-  // ip1 = this->routingTable[p1][0];
-  // ip2 = this->routingTable[p2][0];
-  // if (ip1 == this->ipDirection) {
-  //   //? Que acá se capture el html en un string
-  //   sendTCPRequest(figure.c_str(), 1);
-  // } else {
-  //   // Create thread with socket to search for the piece
-  // }
-  // if (ip2 == this->ipDirection) {
-  //   //? Que acá se capture el html en un string
-  //   sendTCPRequest(figure.c_str(), 2);
-  // } else {
-  //   // Create thread with socket to search for the piece
-  // }
-
-  //? Cuando se tienen ambos, se castean a html, se crea la response y se manda
-
   client->Write(response.c_str());
   client->Close();
-  //! REQUEST MANEJADA
 }
 
-void Intermediate::sendTCPRequest(const char *figureName, int figurePart, std::map<std::string, std::vector<std::string>> routingTable)
+void Intermediate::sendTCPRequest(std::string figureName, std::string ipAddress)
 {
   char buffer[BUFFER_SIZE];
   Socket *intermediateSocket = new Socket('s', false);
-  std::string figureRequest = (buildRequest(figureName, figurePart)).c_str();
-  std::string figureIP = "127.0.0.1";
-  // std::string figureIP = getFigureIP(figureName, 0, routingTable);
-  // std::cout << "Figure IP: " << figureIP << std::endl;
+  std::string figureRequest = buildRequest(figureName);
 
-  // figureIP = getFigureIP(figureName, 1, routingTable);
-  // std::cout << "Figure IP: " << figureIP << std::endl;
-
-  //? La ip debería ser la del servidor de piezas?
-  intermediateSocket->Connect(figureIP.c_str(), TCP_PORT_SERVER);
+  intermediateSocket->Connect(ipAddress.c_str(), TCP_PORT_SERVER);
   intermediateSocket->Write(figureRequest.c_str(), strlen(figureRequest.c_str()));
   intermediateSocket->Read(buffer, BUFFER_SIZE);
+  std::cout << "Response from server: " << buffer << std::endl;
   intermediateSocket->Close();
-  //? Server devolverá acá el html? Deberíamos devolverlo com valor de retorno?
 }
 
 std::string Intermediate::getFigureIP(std::string legoFigure, std::map<std::string, std::vector<std::string>> routingTable) {
@@ -124,13 +95,7 @@ std::string Intermediate::getFigureIP(std::string legoFigure, std::map<std::stri
   auto it = routingTable.find(legoFigure);
   if (it != routingTable.end())
   {
-    std::cout << "Figure found: " << legoFigure << std::endl;
-    figureIP = it->second.front(); // or it->second[0]
-    std::cout << "Figure IP: " << figureIP << std::endl;
-  }
-  else
-  {
-    std::cout << "Figure not found" << std::endl;
+    figureIP = it->second.front();
   }
   return figureIP;
 }
@@ -167,6 +132,7 @@ bool Intermediate::intermediateServer_UDP()
   // printTable();
   intermediate->Close();
   return numBytes <= 0 ? false : true;
+
   // //! CAPTURAR RESPUESTA DEL SERVER (PIEZAS CONOCIDAS)
   // std::stringstream ss(buffer);
 
@@ -191,7 +157,6 @@ void Intermediate::listenServerUDP()
     bytesReceived = intermediate->recvFrom((void *)buffer, BUFFER_SIZE, (void *)&serverInfo);
   }
   updateTable(buffer);
-  // printTable();
   intermediate->sendTo((void *)message, strlen(message), (void *)&serverInfo);
   intermediate->Close();
 }
@@ -202,11 +167,14 @@ bool Intermediate::verifyRequest(std::string userRequest, std::map<std::string, 
          ((int)((routingTableRef.find(userRequest + "1") != routingTableRef.end())) != -1);
 }
 
-std::string Intermediate::buildRequest(const char *figureName, int figurePart)
+std::string Intermediate::buildRequest(std::string figureName)
 {
   std::string legoFigure(figureName);
+  int partPosition = figureName.size() - 1;
+  std::string figurePart = figureName.substr(partPosition);
+  legoFigure = legoFigure.substr(0, partPosition);
   std::string request = "GET / ";
-  request += legoFigure + "%" + std::to_string(figurePart) + "//HTTP\r\n\r\n";
+  request += legoFigure + "%" + figurePart + "//HTTP\r\n\r\n";
   return request;
 }
 
