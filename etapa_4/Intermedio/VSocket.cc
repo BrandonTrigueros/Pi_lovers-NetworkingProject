@@ -102,7 +102,6 @@ int VSocket::DoAccept()
   int st = -1;
   while (st == -1) {
     st = accept(this->idSocket, (sockaddr *)&address, &address_len);
-    std::cout << "Im listening TCP" << std::endl;
   }
 
   return st;

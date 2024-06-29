@@ -1,6 +1,6 @@
 #include "Intermediate.h"
 
-Intermediate::Intermediate() { this->ipDirection = "127.0.0.1"; }
+Intermediate::Intermediate() { }
 
 Intermediate::~Intermediate() {}
 
@@ -15,7 +15,7 @@ void Intermediate::run()
   // ! <---------------------------------- Requests TCP -------------------------------------->
   // ListenClient()
   // SendRequest();
-  std::cout <<  YELLOW << "P.I Lovers intermediate server is running" << RESET << std::endl;
+  std::cout << YELLOW << "P.I Lovers intermediate server is running" << RESET << std::endl;
   if (!intermediateServer_UDP())
   {
     listenServerUDP();
@@ -36,36 +36,41 @@ void Intermediate::listenClients()
   intermediateSocket = new Socket('s');
   intermediateSocket->Bind(CLIENT_PORT);
   intermediateSocket->Listen(5);
-  while (true) {
-    std::cout << "Waiting for client" << std::endl;
+  while (true)
+  {
+    std::cout << "Im listening to Client" << std::endl;
     client = intermediateSocket->Accept();
     std::cout << "Client connected" << std::endl;
-    worker = new std::thread(handleClient, (void *)client, this->routingTable);
+    worker = new std::thread(handleClient, (void *)client, (void*)&this->routingTable);
   }
   worker->join();
 }
 
-void Intermediate::handleClient(void *socket, std::map<std::string, std::vector<std::string>> routingTable)
+void Intermediate::handleClient(void *socket, void* routingTableRef)
 {
   char request[BUFFER_SIZE];
+  std::map<std::string, std::vector<std::string>> routingTable = *(std::map<std::string, std::vector<std::string>>*)routingTableRef;
   Socket *client = (Socket *)socket;
   client->Read(request, BUFFER_SIZE);
 
   //! MANEJO DE LA REQUEST
-  std::map<std::string, std::vector<std::string>> routingTableRef = routingTable;
   std::string partOne, partTwo, partOneIP, partTwoIP, response;
   std::string requestStr(request);
   size_t firstSlashPos = requestStr.find_first_of('/');
   size_t lastSlashPos = requestStr.find_first_of('/', firstSlashPos + 1);
   std::string figureComment = requestStr.substr(firstSlashPos + 1, lastSlashPos - 5);
   requestStr = figureComment;
-  std::cout << "Figure is: " << requestStr << std::endl;
+  // std::cout << "Figure is: " << requestStr << std::endl;
 
-  if (verifyRequest(requestStr, routingTableRef))
+  if (verifyRequest(requestStr, routingTable))
   {
     std::cout << "Figure is available" << std::endl;
-    sendTCPRequest(requestStr.c_str(), 0, routingTable);
-    sendTCPRequest(requestStr.c_str(), 1, routingTable);
+    for(int i = 0; i < 2; i++) {
+      std::string figurePart = requestStr + std::to_string(i);
+      std::string ipAddress = getFigureIP(figurePart, routingTable);
+      // sendTCPRequest(figurePart.c_str(), i, ipAddress);
+      // ToDo: send the request to the server
+    }
   }
   else
   {
@@ -99,12 +104,12 @@ void Intermediate::sendTCPRequest(const char *figureName, int figurePart, std::m
   char buffer[BUFFER_SIZE];
   Socket *intermediateSocket = new Socket('s', false);
   std::string figureRequest = (buildRequest(figureName, figurePart)).c_str();
+  std::string figureIP = "127.0.0.1";
+  // std::string figureIP = getFigureIP(figureName, 0, routingTable);
+  // std::cout << "Figure IP: " << figureIP << std::endl;
 
-  std::string figureIP = getFigureIP(figureName, 0, routingTable);
-  std::cout << "Figure IP: " << figureIP << std::endl;
-
-  figureIP = getFigureIP(figureName, 1, routingTable);
-  std::cout << "Figure IP: " << figureIP << std::endl;
+  // figureIP = getFigureIP(figureName, 1, routingTable);
+  // std::cout << "Figure IP: " << figureIP << std::endl;
 
   //? La ip debería ser la del servidor de piezas?
   intermediateSocket->Connect(figureIP.c_str(), TCP_PORT_SERVER);
@@ -114,16 +119,12 @@ void Intermediate::sendTCPRequest(const char *figureName, int figurePart, std::m
   //? Server devolverá acá el html? Deberíamos devolverlo com valor de retorno?
 }
 
-std::string Intermediate::getFigureIP(std::string figureName, int legoPart, std::map<std::string, std::vector<std::string>> routingTable)
-{
+std::string Intermediate::getFigureIP(std::string legoFigure, std::map<std::string, std::vector<std::string>> routingTable) {
   std::string figureIP = "";
-  std::string legoFigure = figureName + std::to_string(legoPart);
-  std::cout << "Figure: " << legoFigure << std::endl;
-
-  auto it = routingTable.find(figureName + "0");
+  auto it = routingTable.find(legoFigure);
   if (it != routingTable.end())
   {
-    std::cout << "Figure found" << std::endl;
+    std::cout << "Figure found: " << legoFigure << std::endl;
     figureIP = it->second.front(); // or it->second[0]
     std::cout << "Figure IP: " << figureIP << std::endl;
   }
@@ -163,11 +164,12 @@ bool Intermediate::intermediateServer_UDP()
       (void *)buffer, BUFFER_SIZE, (void *)&intermediateInfo);
   buffer[numBytes - 1] = '\0';
   updateTable(buffer);
-  printTable();
+  // printTable();
   intermediate->Close();
   return numBytes <= 0 ? false : true;
   // //! CAPTURAR RESPUESTA DEL SERVER (PIEZAS CONOCIDAS)
   // std::stringstream ss(buffer);
+
   // std::string item;
   // while (std::getline(ss, item, ',')) {
   //   knownPieces.push_back(item);
@@ -189,7 +191,7 @@ void Intermediate::listenServerUDP()
     bytesReceived = intermediate->recvFrom((void *)buffer, BUFFER_SIZE, (void *)&serverInfo);
   }
   updateTable(buffer);
-  printTable();
+  // printTable();
   intermediate->sendTo((void *)message, strlen(message), (void *)&serverInfo);
   intermediate->Close();
 }
@@ -197,7 +199,7 @@ void Intermediate::listenServerUDP()
 bool Intermediate::verifyRequest(std::string userRequest, std::map<std::string, std::vector<std::string>> routingTableRef)
 {
   return ((int)((routingTableRef.find(userRequest + "0") != routingTableRef.end())) != -1) &&
-         ((int)((routingTableRef.find(userRequest + "1") != routingTableRef.end()) )!= -1);
+         ((int)((routingTableRef.find(userRequest + "1") != routingTableRef.end())) != -1);
 }
 
 std::string Intermediate::buildRequest(const char *figureName, int figurePart)
@@ -230,24 +232,24 @@ void Intermediate::addPiece(std::string piece)
   }
   std::string figura = parts[0];
   std::string ip = parts[1];
-  if (pieces_map.find(figura) != pieces_map.end())
+  if (routingTable.find(figura) != routingTable.end())
   {
-    pieces_map[figura].push_back(ip);
+    routingTable[figura].push_back(ip);
   }
   else
   {
-    pieces_map[figura] = {ip};
+    routingTable[figura] = {ip};
   }
-  route_table.clear();
-  for (const auto &pair : pieces_map)
+  routeTable.clear();
+  for (const auto &pair : routingTable)
   {
-    route_table += "$" + pair.first;
+    routeTable += "$" + pair.first;
     for (const std::string &ip : pair.second)
     {
-      route_table += "@" + ip;
+      routeTable += "@" + ip;
     }
   }
-  route_table += "$";
+  routeTable += "$";
 }
 
 void Intermediate::deletePiece(std::string piece)
@@ -260,36 +262,36 @@ void Intermediate::deletePiece(std::string piece)
   }
   std::string figura = parts[0];
   std::string ip = parts[1];
-  auto it = pieces_map.find(figura);
-  if (it != pieces_map.end())
+  auto it = routingTable.find(figura);
+  if (it != routingTable.end())
   {
     auto &ips = it->second;
     ips.erase(std::remove(ips.begin(), ips.end(), ip), ips.end());
     if (ips.empty())
     {
-      pieces_map.erase(it);
+      routingTable.erase(it);
     }
   }
   else
   {
     std::cerr << "Error: Intentando eliminar una figura inexistente" << std::endl;
   }
-  route_table.clear();
-  for (const auto &pair : pieces_map)
+  routeTable.clear();
+  for (const auto &pair : routingTable)
   {
-    route_table += "$" + pair.first;
+    routeTable += "$" + pair.first;
     for (const std::string &ip : pair.second)
     {
-      route_table += "@" + ip;
+      routeTable += "@" + ip;
     }
   }
-  route_table += "$";
+  routeTable += "$";
 }
 
 void Intermediate::parseTable()
 {
-  this->pieces_map.clear();
-  std::vector<std::string> segmentos = split(this->route_table, '$');
+  this->routingTable.clear();
+  std::vector<std::string> segmentos = split(this->routeTable, '$');
   for (const std::string &segmento : segmentos)
   {
     if (!segmento.empty())
@@ -299,7 +301,7 @@ void Intermediate::parseTable()
       {
         std::string figure = parts[0];
         std::vector<std::string> ips(parts.begin() + 1, parts.end());
-        this->pieces_map[figure] = ips;
+        this->routingTable[figure] = ips;
       }
     }
   }
@@ -307,13 +309,13 @@ void Intermediate::parseTable()
 
 void Intermediate::updateTable(std::string newTable)
 {
-  this->route_table = newTable;
+  this->routeTable = newTable;
   this->parseTable();
 }
 
 void Intermediate::printTable()
 {
-  for (const auto &pair : this->pieces_map)
+  for (const auto &pair : this->routingTable)
   {
     std::cout << "Figura: " << pair.first << std::endl;
     std::cout << "IPs: ";

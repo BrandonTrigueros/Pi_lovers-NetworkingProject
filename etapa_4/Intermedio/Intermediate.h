@@ -26,19 +26,11 @@ class Intermediate {
   private:
   std::vector<std::string> knownPieces; // Map with the figures of our server
   std::map<std::string, std::vector<std::string>> routingTable; // Map that contains figure and IP
-  std::string ipDirection;
-
-  public:
-  Intermediate();
-  ~Intermediate();
-  void run();
-
-  private:
-  std::string route_table;
-  std::map<std::string, std::vector<std::string>> pieces_map;
+  std::string routeTable;
+  
   // client
   void listenClients();
-  static void handleClient(void*, std::map<std::string, std::vector<std::string>>);
+  static void handleClient(void*, void*);
 
   // intermediate
   void listenIntermediateBroadcast();
@@ -49,7 +41,7 @@ class Intermediate {
   void listenServerUDP();
 
   static void sendTCPRequest(const char*, int, std::map<std::string, std::vector<std::string>>);
-  static std::string getFigureIP(std::string, int, std::map<std::string, std::vector<std::string>>);
+  static std::string getFigureIP(std::string, std::map<std::string, std::vector<std::string>>);
 
   static bool verifyRequest(std::string, std::map<std::string, std::vector<std::string>>);
   static std::string buildRequest(const char*, int);
@@ -61,6 +53,10 @@ class Intermediate {
   void parseTable();
   void printTable();
 
+  public:
+  Intermediate();
+  ~Intermediate();
+  void run();
   // void sendTCP();
   // void receiveTCP();
   // void receiveUDP();

@@ -142,6 +142,7 @@ void Server::listenIntermediateTCP() {
 
   while (true)
   {
+    std::cout << "Im listening Intermediate" << std::endl;
     intermediate = server->Accept();
     thread_TCP = new std::thread(responseTCP, (void *)intermediate);
   }
