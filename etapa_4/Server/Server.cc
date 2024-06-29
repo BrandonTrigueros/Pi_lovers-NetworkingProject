@@ -90,17 +90,16 @@ void Server::scanExistingPieces()
   }
 }
 
-void Server::concatFigures()
-{
+void Server::concatFigures() {
   std::string ipAddress = getIPAddress();
   for (unsigned int i = 0; i < this->serverPieces.size(); i++)
   {
     this->myLegoFigures += "$" + this->serverPieces[i] + "@" + ipAddress;
   }
+  this->myLegoFigures += "$";
 }
 
-std::string Server::getIPAddress()
-{
+std::string Server::getIPAddress() {
   char hostname[HOSTNAME_LENGTH];
   hostname[HOSTNAME_LENGTH - 1] = '\0';       // Ensure the hostname array is null-terminated
   gethostname(hostname, HOSTNAME_LENGTH - 1); // Retrieve the hostname of the local machine

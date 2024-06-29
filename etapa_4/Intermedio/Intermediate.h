@@ -17,7 +17,10 @@
 #define UDP_PORT_SERVER 4400
 #define TCP_PORT_SERVER 4500
 
-#define BUFFER_SIZE 512
+#define BUFFER_SIZE 1024
+
+#define YELLOW "\033[33m"
+#define RESET "\033[0m"
 
 class Intermediate {
   private:

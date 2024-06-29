@@ -99,11 +99,10 @@ int VSocket::DoAccept()
 {
   struct sockaddr_in address;
   socklen_t address_len;
-  int st = accept(this->idSocket, (sockaddr *)&address, &address_len);
-
-  if (-1 == st)
-  {
-    throw std::runtime_error("VSocket::DoAccept()");
+  int st = -1;
+  while (st == -1) {
+    st = accept(this->idSocket, (sockaddr *)&address, &address_len);
+    std::cout << "Im listening TCP" << std::endl;
   }
 
   return st;

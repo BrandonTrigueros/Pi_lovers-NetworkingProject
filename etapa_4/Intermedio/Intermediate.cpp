@@ -15,7 +15,7 @@ void Intermediate::run()
   // ! <---------------------------------- Requests TCP -------------------------------------->
   // ListenClient()
   // SendRequest();
-  std::cout << "Pi_lover intermediate running" << std::endl;
+  std::cout <<  YELLOW << "P.I Lovers intermediate server is running" << RESET << std::endl;
   if (!intermediateServer_UDP())
   {
     listenServerUDP();
@@ -36,9 +36,10 @@ void Intermediate::listenClients()
   intermediateSocket = new Socket('s');
   intermediateSocket->Bind(CLIENT_PORT);
   intermediateSocket->Listen(5);
-  while (true)
-  {
+  while (true) {
+    std::cout << "Waiting for client" << std::endl;
     client = intermediateSocket->Accept();
+    std::cout << "Client connected" << std::endl;
     worker = new std::thread(handleClient, (void *)client, this->routingTable);
   }
   worker->join();
@@ -195,8 +196,8 @@ void Intermediate::listenServerUDP()
 
 bool Intermediate::verifyRequest(std::string userRequest, std::map<std::string, std::vector<std::string>> routingTableRef)
 {
-  return ((routingTableRef.find(userRequest + "0") != routingTableRef.end()) != -1) &&
-         ((routingTableRef.find(userRequest + "1") != routingTableRef.end()) != -1);
+  return ((int)((routingTableRef.find(userRequest + "0") != routingTableRef.end())) != -1) &&
+         ((int)((routingTableRef.find(userRequest + "1") != routingTableRef.end()) )!= -1);
 }
 
 std::string Intermediate::buildRequest(const char *figureName, int figurePart)

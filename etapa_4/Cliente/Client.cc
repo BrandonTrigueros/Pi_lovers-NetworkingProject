@@ -13,7 +13,7 @@ Client::~Client() { }
 
 void Client::run() {
   this->clientSocket = new Socket('s', false);
-  this->ipDirection = "10.1.35.14";
+  this->ipDirection = "192.168.100.5";
   this->request = "GET /" + this->figure + "/ /HTTP/1.1\r\n";
   this->clientSocket->Connect(this->ipDirection, CLIENT_PORT);
   this->clientSocket->Write(this->request.c_str());
@@ -23,6 +23,7 @@ void Client::run() {
     this->response
         += this->buffer;  // Appending received data to the response string
   }
+  std::cout << "Response received from server" << std::endl;
   printResponse();
 }
 
