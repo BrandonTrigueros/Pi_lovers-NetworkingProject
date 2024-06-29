@@ -13,7 +13,7 @@ Client::~Client() { }
 
 void Client::run() {
   this->clientSocket = new Socket('s', false);
-  this->ipDirection = "192.168.100.5";
+  this->ipDirection = "127.0.0.1";
   this->request = "GET /" + this->figure + "/ /HTTP/1.1\r\n";
   this->clientSocket->Connect(this->ipDirection, CLIENT_PORT);
   this->clientSocket->Write(this->request.c_str());
