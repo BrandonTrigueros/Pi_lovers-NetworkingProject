@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
+#include <regex>
 
 #include "Socket.h"
 #include "VSocket.h"
@@ -17,6 +18,7 @@
 
 #define RED "\033[1;31m"
 #define CYAN "\033[1;36m"
+#define YELLOW "\033[1;33m"
 #define GREEN "\033[1;32m"
 #define RESET "\033[0m"
 
@@ -37,7 +39,8 @@ class Client {
   bool analyzeArgs(int, char*[]);
 
 
-  void printResponse();
+  void printResponse(std::string);
+  int getLegoParts(std::string);
   std::string castHTML(std::string);
 };
 #endif
