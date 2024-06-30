@@ -18,7 +18,8 @@
 
 #define HOSTNAME_LENGTH 1024
 
-
+#define BLUE "\033[34m"
+#define UNDERLINE "\033[4m"
 #define YELLOW "\033[33m"
 #define RESET "\033[0m"
 

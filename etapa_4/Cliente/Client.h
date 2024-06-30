@@ -13,7 +13,7 @@
 #include "VSocket.h"
 
 #define CLIENT_PORT 4100
-#define MAXBUF 1024
+#define MAXBUF 4096
 
 #define RED "\033[1;31m"
 #define CYAN "\033[1;36m"
@@ -35,6 +35,9 @@ class Client {
   ~Client();
   void run();
   bool analyzeArgs(int, char*[]);
+
+
   void printResponse();
+  std::string castHTML(std::string);
 };
 #endif

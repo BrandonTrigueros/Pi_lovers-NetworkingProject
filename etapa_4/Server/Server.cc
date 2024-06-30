@@ -1,7 +1,6 @@
 #include "Server.h"
 
-void Server::run()
-{
+void Server::run() {
   scanExistingPieces();
   concatFigures();
   bool conected = false;
@@ -142,9 +141,7 @@ void Server::listenIntermediateTCP() {
 
   while (true)
   {
-    std::cout << "Im listening Intermediate" << std::endl;
     intermediate = server->Accept();
-    std::cout << "Intermediate connected" << std::endl;
     thread_TCP = new std::thread(responseTCP, (void *)intermediate);
   }
   thread_TCP->join();
@@ -152,11 +149,12 @@ void Server::listenIntermediateTCP() {
 
 void Server::responseTCP(void *socket) {
   char request[BUFFER_SIZE];
-  // char *response = (char *)"TCP connection accepted";
   VSocket *intermediate = (VSocket *)socket;
   intermediate->Read(request, BUFFER_SIZE);
 
   std::string requestStr(request);
+  std::cout << BLUE << UNDERLINE << requestStr << RESET << std::endl;
+  
   size_t firstSlashPos = requestStr.find('/');
   size_t lastSlashPos = requestStr.find('/', firstSlashPos + 1);
   std::string legoFigure = requestStr.substr(firstSlashPos + 1, lastSlashPos - firstSlashPos - 1);

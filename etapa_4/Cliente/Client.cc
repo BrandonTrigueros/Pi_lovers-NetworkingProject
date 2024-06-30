@@ -5,7 +5,7 @@ Client::Client() {
   this->socketType = ' ';
   this->figure = "";
   this->request = "";
-  this->ipDirection = nullptr;
+  this->ipDirection = nullptr; // ToDo: maybe we can obtain dynamically this
   memset(this->buffer, 0, MAXBUF);
 }
 
@@ -13,7 +13,7 @@ Client::~Client() { }
 
 void Client::run() {
   this->clientSocket = new Socket('s', false);
-  this->ipDirection = "127.0.0.1";
+  this->ipDirection = "127.0.0.1"; // ToDo change to the server's IP as needed (can be obtained dynamically)
   this->request = "GET /" + this->figure + "/ /HTTP/1.1\r\n";
   this->clientSocket->Connect(this->ipDirection, CLIENT_PORT);
   this->clientSocket->Write(this->request.c_str());
@@ -23,7 +23,6 @@ void Client::run() {
     this->response
         += this->buffer;  // Appending received data to the response string
   }
-  std::cout << "Response received from server" << std::endl;
   printResponse();
 }
 
@@ -40,6 +39,9 @@ bool Client::analyzeArgs(int argc, char* argv[]) {
 }
 
 void Client::printResponse() {
-  std::cout << "\t" << CYAN << this->figure << " parts" << RESET << std::endl;
+  std::transform(this->figure.begin(), this->figure.end(), this->figure.begin(), ::toupper);
+  std::cout << "\t" << CYAN << this->figure << " PARTS" << RESET << std::endl;
+
+
   std::cout << this->response << std::endl;
 }

@@ -17,9 +17,11 @@
 #define UDP_PORT_SERVER 4400
 #define TCP_PORT_SERVER 4500
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 5024
 
 #define YELLOW "\033[33m"
+#define BLUE "\033[34m"
+#define UNDERLINE "\033[4m"
 #define RESET "\033[0m"
 
 class Intermediate {
@@ -40,7 +42,7 @@ class Intermediate {
   bool intermediateServer_UDP();
   void listenServerUDP();
 
-  static void sendTCPRequest(std::string, std::string);
+  static std::string sendTCPRequest(std::string, std::string);
   static std::string getFigureIP(std::string, std::map<std::string, std::vector<std::string>>);
 
   static bool verifyRequest(std::string, std::map<std::string, std::vector<std::string>>);

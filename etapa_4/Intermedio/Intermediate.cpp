@@ -38,9 +38,7 @@ void Intermediate::listenClients()
   intermediateSocket->Listen(5);
   while (true)
   {
-    std::cout << "Im listening to Client" << std::endl;
     client = intermediateSocket->Accept();
-    std::cout << "Client connected" << std::endl;
     worker = new std::thread(handleClient, (void *)client, (void*)&this->routingTable);
   }
   worker->join();
@@ -52,42 +50,41 @@ void Intermediate::handleClient(void *socket, void* routingTableRef)
   std::map<std::string, std::vector<std::string>> routingTable = *(std::map<std::string, std::vector<std::string>>*)routingTableRef;
   Socket *client = (Socket *)socket;
   client->Read(request, BUFFER_SIZE);
-
+  request[strlen(request)] = '\0';
   std::string response;
   std::string requestStr(request);
   size_t firstSlashPos = requestStr.find_first_of('/');
   size_t lastSlashPos = requestStr.find_first_of('/', firstSlashPos + 1);
   std::string figureComment = requestStr.substr(firstSlashPos + 1, lastSlashPos - 5);
   requestStr = figureComment;
-  if (verifyRequest(requestStr, routingTable))
-  {
-    std::cout << "Figure is available" << std::endl;
+  std::string serverResponse = "";
+  if (verifyRequest(requestStr, routingTable)) {
     for(int i = 0; i < 2; i++) {
+      memset(request, 0, BUFFER_SIZE);
       std::string figurePart = requestStr + std::to_string(i);
       std::string ipAddress = getFigureIP(figurePart, routingTable);
-      sendTCPRequest(figurePart, ipAddress);
+      serverResponse += sendTCPRequest(figurePart, ipAddress);
     }
+  } else {
+    // ToDo: Send error message
   }
-  else
-  {
-    // ToDo: return ERROR 404
-  }
-
-  client->Write(response.c_str());
+  client->Write(serverResponse.c_str());
   client->Close();
 }
 
-void Intermediate::sendTCPRequest(std::string figureName, std::string ipAddress)
+std::string Intermediate::sendTCPRequest(std::string figureName, std::string ipAddress)
 {
   char buffer[BUFFER_SIZE];
   Socket *intermediateSocket = new Socket('s', false);
   std::string figureRequest = buildRequest(figureName);
 
+  memset(buffer, 0, BUFFER_SIZE);
   intermediateSocket->Connect(ipAddress.c_str(), TCP_PORT_SERVER);
   intermediateSocket->Write(figureRequest.c_str(), strlen(figureRequest.c_str()));
   intermediateSocket->Read(buffer, BUFFER_SIZE);
-  std::cout << "Response from server: " << buffer << std::endl;
+  std::string serverResponse(buffer);
   intermediateSocket->Close();
+  return serverResponse;
 }
 
 std::string Intermediate::getFigureIP(std::string legoFigure, std::map<std::string, std::vector<std::string>> routingTable) {
@@ -129,7 +126,6 @@ bool Intermediate::intermediateServer_UDP()
       (void *)buffer, BUFFER_SIZE, (void *)&intermediateInfo);
   buffer[numBytes - 1] = '\0';
   updateTable(buffer);
-  // printTable();
   intermediate->Close();
   return numBytes <= 0 ? false : true;
 
@@ -175,6 +171,7 @@ std::string Intermediate::buildRequest(std::string figureName)
   legoFigure = legoFigure.substr(0, partPosition);
   std::string request = "GET / ";
   request += legoFigure + "%" + figurePart + "//HTTP\r\n\r\n";
+  std::cout << BLUE << UNDERLINE << request << RESET << std::endl;
   return request;
 }
 
@@ -285,8 +282,8 @@ void Intermediate::printTable()
 {
   for (const auto &pair : this->routingTable)
   {
-    std::cout << "Figura: " << pair.first << std::endl;
-    std::cout << "IPs: ";
+    std::cout << "Figure: " << pair.first << std::endl;
+    std::cout << "IP address: ";
     for (const std::string &ip : pair.second)
     {
       std::cout << ip << " ";
