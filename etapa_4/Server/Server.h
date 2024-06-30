@@ -27,7 +27,6 @@ class Server {
   char* userRequest;
   std::vector<std::string> serverPieces;
   std::string myLegoFigures;
-  FileManager* fileManager;
 
   public:
   Server() = default;

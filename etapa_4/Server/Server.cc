@@ -150,21 +150,29 @@ void Server::listenIntermediateTCP() {
   thread_TCP->join();
 }
 
-// todo: Hacer qudevuelva el html solicitado
 void Server::responseTCP(void *socket) {
   char request[BUFFER_SIZE];
-  char *response = (char *)"TCP connection accepted";
+  // char *response = (char *)"TCP connection accepted";
   VSocket *intermediate = (VSocket *)socket;
   intermediate->Read(request, BUFFER_SIZE);
 
   std::string requestStr(request);
-  size_t firstSlashPos = requestStr.find_first_of('/');
-  size_t lastSlashPos = requestStr.find_first_of('/', firstSlashPos + 1);
-  std::string figureComment = requestStr.substr(firstSlashPos + 1, lastSlashPos - 5);
-  requestStr = figureComment;
-  std::cout << "Received request: " << requestStr << std::endl;
-  // std::cout << "Received data: " << request << std::endl;
-  intermediate->Write((void *)response, strlen(response));
-  // std::cout << "Sent data: " << response << std::endl;
+  size_t firstSlashPos = requestStr.find('/');
+  size_t lastSlashPos = requestStr.find('/', firstSlashPos + 1);
+  std::string legoFigure = requestStr.substr(firstSlashPos + 1, lastSlashPos - firstSlashPos - 1);
+
+  size_t percentageSymbol = legoFigure.find('%');
+  if (percentageSymbol != std::string::npos) {
+    legoFigure.erase(percentageSymbol, 1);
+  }
+
+  size_t initalSpace = legoFigure.find(' ');
+  if (initalSpace != std::string::npos) {
+    legoFigure.erase(initalSpace, 1);
+  }
+
+  FileManager* fileManager = new FileManager();
+  std::string serverResponse = fileManager->Read(legoFigure);
+  intermediate->Write((void *)serverResponse.c_str(), serverResponse.length());
   intermediate->Close();
 }

@@ -1,16 +1,21 @@
 #include "FileManager.h"
 
-void FileManager::Read(std::string* buffer, const char* file_path) {
-  std::ifstream file;
+std::string FileManager::Read(std::string file_path) {
+  file_path = "./Legos/" + file_path + ".txt";
+  std::cout << "File path: "<< file_path << std::endl;
+  std::ifstream legoFile;
   std::string line;
-  file.open(file_path);
-  if (file.is_open()) {
-    while (std::getline(file, line)) {
-      *buffer += line;
-      *buffer += "\n";
+  std::string serverResponse = "";
+  legoFile.open(file_path);
+  if (legoFile.is_open()) {
+    while (std::getline(legoFile, line)) {
+      serverResponse += line;
+      serverResponse += "\n";
     }
-    file.close();
+    legoFile.close();
   } else {
     std::cout << "Error opening file!" << std::endl;
   }
+
+  return serverResponse;
 }
