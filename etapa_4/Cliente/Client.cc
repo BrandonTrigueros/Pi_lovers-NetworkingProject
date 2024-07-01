@@ -6,7 +6,7 @@ Client::Client()
   this->socketType = ' ';
   this->figure = "";
   this->request = "";
-  this->ipDirection = nullptr; // ToDo: maybe we can obtain dynamically this
+  this->ipDirection = nullptr; // ToDo (Bradon or Jose): maybe we can obtain dynamically this
   memset(this->buffer, 0, MAXBUF);
 }
 
@@ -15,7 +15,7 @@ Client::~Client() {}
 void Client::run()
 {
   this->clientSocket = new Socket('s', false);
-  this->ipDirection = "127.0.0.1"; // ToDo change to the server's IP as needed (can be obtained dynamically)
+  this->ipDirection = "127.0.0.1"; // ToDo change to the server's IP as needed (can be obtained dynamically in the constructor)
   this->request = "GET /" + this->figure + "/ /HTTP/1.1\r\n";
   this->clientSocket->Connect(this->ipDirection, CLIENT_PORT);
   this->clientSocket->Write(this->request.c_str());
@@ -47,27 +47,35 @@ bool Client::analyzeArgs(int argc, char *argv[])
 
 void Client::printResponse(std::string serverResponse)
 {
-  std::transform(this->figure.begin(), this->figure.end(), this->figure.begin(), ::toupper);
-  std::cout << "\n\t" << CYAN << this->figure << " PARTS" << RESET << std::endl;
-
   this->response = castHTML(serverResponse);
   std::cout << this->response << std::endl;
 }
 
+bool Client::verifyErrorResponse(std::string serverResponse) {
+  return serverResponse.find("error 404") != std::string::npos;
+}
+
 std::string Client::castHTML(std::string serverResponse)
 {
-  int legoParts = getLegoParts(serverResponse);
-  std::regex regexPattern("<TD ALIGN=center>([^<]+)</TD>\\s*<TD ALIGN=center>([^<]+)</TD>");
-  std::smatch matches;
   std::string formatedResponse = "";
-  auto responseStart = serverResponse.cbegin();
-  auto responseEnd = serverResponse.cend();
-  while (std::regex_search(responseStart, responseEnd, matches, regexPattern))
-  {
-    formatedResponse += matches[1].str() + " " + matches[2].str() + "\n";
-    responseStart = matches.suffix().first;
+  if (!verifyErrorResponse(serverResponse)) {
+    std::transform(this->figure.begin(), this->figure.end(), this->figure.begin(), ::toupper);
+    std::cout << "\n\t" << CYAN << this->figure << " PARTS" << RESET << std::endl;
+    
+    int legoParts = getLegoParts(serverResponse);
+    std::regex regexPattern("<TD ALIGN=center>([^<]+)</TD>\\s*<TD ALIGN=center>([^<]+)</TD>");
+    std::smatch matches;
+    auto responseStart = serverResponse.cbegin();
+    auto responseEnd = serverResponse.cend();
+    while (std::regex_search(responseStart, responseEnd, matches, regexPattern))
+    {
+      formatedResponse += matches[1].str() + " " + matches[2].str() + "\n";
+      responseStart = matches.suffix().first;
+    }
+    formatedResponse += "\n\033[1;33mTotal number of pieces: " + std::to_string(legoParts) + "\033[0m\n";
+  } else {
+    formatedResponse = "\033[1;31mError 404: Figure not Found\033[0m\n";
   }
-  formatedResponse += "\n\033[1;33mTotal number of pieces: " + std::to_string(legoParts) + "\033[0m\n";
   return formatedResponse;
 }
 

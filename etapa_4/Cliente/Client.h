@@ -41,6 +41,7 @@ class Client {
 
   void printResponse(std::string);
   int getLegoParts(std::string);
+  bool verifyErrorResponse(std::string);
   std::string castHTML(std::string);
 };
 #endif

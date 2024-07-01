@@ -59,9 +59,5 @@ class Intermediate {
   Intermediate();
   ~Intermediate();
   void run();
-  // void sendTCP();
-  // void receiveTCP();
-  // void receiveUDP();
-  // castHTML();
 };
 #endif  // INTERMEDIATE_H
