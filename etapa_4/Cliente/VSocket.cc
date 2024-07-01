@@ -1,18 +1,15 @@
-/**
- *  Establece la definición de la clase Socket para efectuar la comunicación
- *  de procesos que no comparten memoria, utilizando un esquema de memoria
- *  distribuida.  El desarrollo de esta clase se hará en varias etapas, primero
- *  los métodos necesarios para los clientes, en la otras etapas los métodos
- *para el servidor, manejo de IP-v6, conexiones seguras y otros
- *
- *  Universidad de Costa Rica
- *  ECCI
- *  CI0123 Proyecto integrador de redes y sistemas operativos
- *  2023-ii
- *  Grupos: 2 y 3
- *
- * (versión Fedora)
- **/
+#include <cstddef>
+#include <cstdio>
+#include <cstring>  // memset
+#include <iostream>
+#include <stdexcept>
+
+#include <arpa/inet.h>  // ntohs
+#include <sys/socket.h>
+#include <unistd.h>  // close
+// #include <sys/types.h>
+#include <arpa/inet.h>
+#include <netdb.h>  // getaddrinfo, freeaddrinfo
 
 #include "VSocket.h"
 
@@ -29,7 +26,9 @@ void VSocket::InitVSocket(char t, bool IPv6) {
   this->idSocket = st;
   this->IPv6 = IPv6;
   int optval = 1;
-  if (setsockopt(this->idSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
+  if (setsockopt(
+          this->idSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval))
+      < 0) {
     perror("setsockopt");
   }
 }

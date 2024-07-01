@@ -4,7 +4,7 @@ int main(int argc, char* argv[]) {
   Client client;
   if (client.analyzeArgs(argc, argv)) {
     client.run();
-    client.printResponse();
+    //client.printResponse();
   }
   return 0;
 }

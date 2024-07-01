@@ -3,9 +3,11 @@
 
 #include "Socket.h"
 #include "VSocket.h"
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <sstream>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -15,23 +17,22 @@
 #define UDP_PORT_SERVER 4400
 #define TCP_PORT_SERVER 4500
 
-#define BUFFER_SIZE 512
+#define BUFFER_SIZE 5024
+
+#define YELLOW "\033[33m"
+#define BLUE "\033[34m"
+#define UNDERLINE "\033[4m"
+#define RESET "\033[0m"
 
 class Intermediate {
   private:
   std::vector<std::string> knownPieces; // Map with the figures of our server
   std::map<std::string, std::vector<std::string>> routingTable; // Map that contains figure and IP
-  std::string ipDirection;
-
-  public:
-  Intermediate();
-  ~Intermediate();
-  void run();
-
-  private:
+  std::string routeTable;
+  
   // client
   void listenClients();
-  static void handleClient(void*, std::map<std::string, std::vector<std::string>>);
+  static void handleClient(void*, void*);
 
   // intermediate
   void listenIntermediateBroadcast();
@@ -41,14 +42,22 @@ class Intermediate {
   bool intermediateServer_UDP();
   void listenServerUDP();
 
-  void sendTCPRequest(const char*, int);
+  static std::string sendTCPRequest(std::string, std::string);
+  static std::string getFigureIP(std::string, std::map<std::string, std::vector<std::string>>);
 
-  bool verifyRequest();
-  std::string buildRequest(const char*, int);
+  static bool verifyRequest(std::string, std::map<std::string, std::vector<std::string>>);
+  static std::string buildRequest(std::string);
 
-  // void sendTCP();
-  // void receiveTCP();
-  // void receiveUDP();
-  // castHTML();
+  std::vector<std::string> split(const std::string &s, char delimiter);
+  void updateTable(std::string);
+  void addPiece(std::string);
+  void deletePiece(std::string);
+  void parseTable();
+  void printTable();
+
+  public:
+  Intermediate();
+  ~Intermediate();
+  void run();
 };
 #endif  // INTERMEDIATE_H

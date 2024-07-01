@@ -8,15 +8,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
+#include <regex>
 
 #include "Socket.h"
 #include "VSocket.h"
 
 #define CLIENT_PORT 4100
-#define MAXBUF 1024
+#define MAXBUF 4096
 
 #define RED "\033[1;31m"
 #define CYAN "\033[1;36m"
+#define YELLOW "\033[1;33m"
 #define GREEN "\033[1;32m"
 #define RESET "\033[0m"
 
@@ -35,6 +37,11 @@ class Client {
   ~Client();
   void run();
   bool analyzeArgs(int, char*[]);
-  void printResponse();
+
+
+  void printResponse(std::string);
+  int getLegoParts(std::string);
+  bool verifyErrorResponse(std::string);
+  std::string castHTML(std::string);
 };
 #endif

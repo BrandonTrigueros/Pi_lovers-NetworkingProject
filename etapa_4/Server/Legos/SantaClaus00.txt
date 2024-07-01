@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Santa Claus</title>
+  <style>
+    table {
+      width: 100%;
+    }
+
+    table, th, td {
+      border: 1px solid cornflowerblue;
+      border-collapse: collapse;
+      padding: 5px;
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+      font-size: medium;
+    }
+
+    td {
+      text-align: center;
+    }
+
+    th {
+      color: darkred;
+      background-color: aliceblue;
+      text-align: center;
+    }
+
+    tr:nth-child(even) {
+      background-color: gainsboro;
+    }
+
+  </style>
+</head>
+<body>
+  <div>
+    <h2 style="text-align: center;"> Lista de piezas para armar la figura de Santa Claus </h2>
+    <TABLE>
+      <TR> 
+        <TH> Cantidad </TH> 
+        <TH> Descripción </TH>  
+      </TR>
+      <TR> 
+        <TD ALIGN=center> 1</TD>
+        <TD ALIGN=center> Black Plate 2 x 2</TD>
+      </TR>
+      <TR>
+        <TD ALIGN=center> 2</TD>
+        <TD ALIGN=center> Red Slope 2 x 1</TD>
+      </TR>
+      <TR>
+        <TD ALIGN=center> 1</TD>
+        <TD ALIGN=center> Red Slope 2 x 2 Double</TD>
+      </TR>
+      <TR>
+        <TD ALIGN=center> 1</TD>
+        <TD ALIGN=center> Red Slope, Inverted 2 x 2 with Flat Bottom Pin</TD>
+      </TR>
+      <TR>
+        <TD style="text-align: left;"> Total de piezas para armar esta figura: 5</TD>
+      </TR>
+    </TABLE>
+  </div>    
+</body>
+</html>

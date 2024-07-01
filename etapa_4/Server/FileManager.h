@@ -6,13 +6,13 @@
 #include <string>
 #include <cstring>
 
-class FileManager {
+class FileManager
+{
 
-  public:
-    FileManager() = default;
-    ~FileManager() = default;
-    void Read( std::string* buffer, const char* file_path );
-
+public:
+  FileManager() = default;
+  ~FileManager() = default;
+  std::string Read(std::string);
 };
 
 #endif

@@ -3,6 +3,7 @@
 
 #include "Socket.h"
 #include "VSocket.h"
+#include "FileManager.h"
 #include <filesystem>
 #include <iostream>
 #include <thread>
@@ -13,11 +14,12 @@
 
 #define TCP_PORT 4500
 #define UDP_PORT 4400
-#define BUFFER_SIZE 512
+#define BUFFER_SIZE 1024
 
 #define HOSTNAME_LENGTH 1024
 
-
+#define BLUE "\033[34m"
+#define UNDERLINE "\033[4m"
 #define YELLOW "\033[33m"
 #define RESET "\033[0m"
 
@@ -26,7 +28,6 @@ class Server {
   char* userRequest;
   std::vector<std::string> serverPieces;
   std::string myLegoFigures;
-  // Request queue
 
   public:
   Server() = default;

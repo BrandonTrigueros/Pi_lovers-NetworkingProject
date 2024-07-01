@@ -1,10 +1,8 @@
 #include "Server.h"
 
-void Server::run()
-{
+void Server::run() {
   scanExistingPieces();
   concatFigures();
-
   bool conected = false;
   std::cout << YELLOW << "P.I Lovers server is running..." << RESET << std::endl;
   while (!conected)
@@ -15,6 +13,7 @@ void Server::run()
       conected = listenIntermediateUDP();
     }
   }
+  listenIntermediateTCP();
 }
 
 bool Server::serverIntermediate_UDP()
@@ -22,7 +21,6 @@ bool Server::serverIntermediate_UDP()
   Socket *intermediate;
   int numBytes;
   char buffer[BUFFER_SIZE];
-  char *message = (char *)"Connection request";
   struct sockaddr_in intermediateInfo;
   intermediate = new Socket('d');
   memset(&intermediateInfo, 0, sizeof(intermediateInfo));
@@ -40,7 +38,6 @@ bool Server::serverIntermediate_UDP()
 
 bool Server::listenIntermediateUDP()
 {
-  // std::cout << "Waiting for intermediate..." << std::endl;
   struct sockaddr serverInfo;
   VSocket *intermediate = new Socket('d', false);
   bool isConected = false;
@@ -48,27 +45,17 @@ bool Server::listenIntermediateUDP()
   int tries = 0;
   intermediate->Bind(UDP_PORT);
   char buffer[BUFFER_SIZE];
-  char *message = (char *)"Connection accepted";
   memset(&serverInfo, 0, sizeof(serverInfo));
-  // std::cout << "Server is running" << std::endl;
   while (bytesReceived <= 0 && tries < 5)
   {
-    // std::cout << "Tries: " << tries << std::endl;
-    // std::cout << "I'm listening" << std::endl;
     bytesReceived = intermediate->recvFrom((void *)buffer, BUFFER_SIZE, (void *)&serverInfo);
-    // std::cout << "Received data: " << buffer << std::endl;
     tries++;
   }
 
   if (bytesReceived > 0)
   {
     intermediate->sendTo((void *)this->myLegoFigures.c_str(), strlen(this->myLegoFigures.c_str()), (void *)&serverInfo);
-    // std::cout << "Sent data: " << message << std::endl;
     isConected = true;
-    // for (const auto &pieces : this->serverPieces)
-    // {
-    //   std::cout << "Piece: " << pieces << std::endl;
-    // }
   }
   intermediate->Close();
   return isConected;
@@ -102,19 +89,16 @@ void Server::scanExistingPieces()
   }
 }
 
-void Server::concatFigures()
-{
+void Server::concatFigures() {
   std::string ipAddress = getIPAddress();
-  // std::cout << "IP: " << ipAddress << std::endl;
   for (unsigned int i = 0; i < this->serverPieces.size(); i++)
   {
     this->myLegoFigures += "$" + this->serverPieces[i] + "@" + ipAddress;
   }
-  // std::cout << "My data is: " << this->myLegoFigures << std::endl;
+  this->myLegoFigures += "$";
 }
 
-std::string Server::getIPAddress()
-{
+std::string Server::getIPAddress() {
   char hostname[HOSTNAME_LENGTH];
   hostname[HOSTNAME_LENGTH - 1] = '\0';       // Ensure the hostname array is null-terminated
   gethostname(hostname, HOSTNAME_LENGTH - 1); // Retrieve the hostname of the local machine
@@ -147,8 +131,7 @@ std::string Server::getIPAddress()
   return ""; // Return an empty string if no IP address was found
 }
 
-void Server::listenIntermediateTCP()
-{
+void Server::listenIntermediateTCP() {
   std::thread *thread_TCP;
   VSocket *server, *intermediate;
   server = new Socket('s');
@@ -164,15 +147,30 @@ void Server::listenIntermediateTCP()
   thread_TCP->join();
 }
 
-// todo: Hacer qudevuelva el html solicitado
-void Server::responseTCP(void *socket)
-{
+void Server::responseTCP(void *socket) {
   char request[BUFFER_SIZE];
-  char *response = (char *)"TCP connection accepted";
   VSocket *intermediate = (VSocket *)socket;
   intermediate->Read(request, BUFFER_SIZE);
-  // std::cout << "Received data: " << request << std::endl;
-  intermediate->Write((void *)response, strlen(response));
-  // std::cout << "Sent data: " << response << std::endl;
+
+  std::string requestStr(request);
+  std::cout << BLUE << UNDERLINE << requestStr << RESET << std::endl;
+  
+  size_t firstSlashPos = requestStr.find('/');
+  size_t lastSlashPos = requestStr.find('/', firstSlashPos + 1);
+  std::string legoFigure = requestStr.substr(firstSlashPos + 1, lastSlashPos - firstSlashPos - 1);
+
+  size_t percentageSymbol = legoFigure.find('%');
+  if (percentageSymbol != std::string::npos) {
+    legoFigure.erase(percentageSymbol, 1);
+  }
+
+  size_t initalSpace = legoFigure.find(' ');
+  if (initalSpace != std::string::npos) {
+    legoFigure.erase(initalSpace, 1);
+  }
+
+  FileManager* fileManager = new FileManager();
+  std::string serverResponse = fileManager->Read(legoFigure);
+  intermediate->Write((void *)serverResponse.c_str(), serverResponse.length());
   intermediate->Close();
 }
