@@ -43,11 +43,12 @@ class VSocket {
   size_t Broadcast(char* message, size_t size);
   char* ListenBroadcast(char* buffer, size_t size);
 
+  char* broadcastAddress;
+
   protected:
   int idSocket;
   bool IPv6;
   int port;
-  char* broadcastAddress;
 };
 
 #endif  // VSocket_h
