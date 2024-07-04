@@ -21,8 +21,6 @@ class Socket : public VSocket {
   size_t Read(void*, size_t);
   size_t Write(const void*, size_t);
   size_t Write(const char*);
-  size_t Broadcast(char* message, size_t size);
-  size_t ListenBroadcast(char* buffer, size_t size);
   Socket* Accept();
 
   protected:

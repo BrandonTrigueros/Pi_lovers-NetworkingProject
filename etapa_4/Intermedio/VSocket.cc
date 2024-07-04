@@ -143,3 +143,51 @@ size_t VSocket::recvFrom(void* buffer, size_t size, void* addr) {
 
   return recv_result;
 }
+
+size_t VSocket::Broadcast(char* message, size_t size) {
+  struct sockaddr_in host4;
+  memset((char*)&host4, 0, sizeof(host4));
+  host4.sin_family = AF_INET;
+  host4.sin_port = htons(this->port);
+  host4.sin_addr.s_addr = inet_addr(
+      (char*)this->broadcastAddress);  // Dirección de broadcast para isla 4
+  int broadcast = 1;
+  int st = setsockopt(
+      this->idSocket, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
+  if (0 > st) {
+    throw std::runtime_error("Socket::Broadcast( char *, size_t ): setsockopt");
+  }
+  st = sendto(this->idSocket, message, size, 0, (struct sockaddr*)&host4,
+      sizeof(host4));
+  if (st < 0) {
+    throw std::runtime_error("Error sending broadcast message");
+  }
+  return st;
+}
+
+char* VSocket::ListenBroadcast(char* buffer, size_t size) {
+  struct sockaddr_in addr;
+  memset((char*)&addr, 0, sizeof(addr));
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(this->port);
+  addr.sin_addr.s_addr = inet_addr((char*)this->broadcastAddress);
+
+  int broadcast = 1;
+  int st = setsockopt(
+      idSocket, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
+  if (0 > st) {
+    throw std::runtime_error("Socket::ListenBroadcast( char *, size_t )");
+  }
+
+  socklen_t addrLen = (socklen_t)sizeof(struct sockaddr_in);
+
+  st = recvfrom(idSocket, buffer, size, 0, (sockaddr*)&addr, &addrLen);
+  if (st < 0) {
+    throw std::runtime_error("Error receiving broadcast message");
+  }
+
+  char* senderIP = new char[INET_ADDRSTRLEN];
+  inet_ntop(AF_INET, &(addr.sin_addr), senderIP, INET_ADDRSTRLEN);
+
+  return (char*)senderIP;
+}

@@ -32,7 +32,6 @@ class VSocket {
   virtual size_t Read(void*, size_t) = 0;
   virtual size_t Write(const void*, size_t) = 0;
   virtual size_t Write(const char*) = 0;
-  virtual size_t Broadcast(char* message, size_t size) = 0;
   int Listen(int);
   int Bind(int);
   int DoAccept();
@@ -41,10 +40,14 @@ class VSocket {
   size_t sendTo(const void*, size_t, void*);
   size_t recvFrom(void*, size_t, void*);
 
+  size_t Broadcast(char* message, size_t size);
+  char* ListenBroadcast(char* buffer, size_t size);
+
   protected:
   int idSocket;
   bool IPv6;
   int port;
+  char* broadcastAddress;
 };
 
 #endif  // VSocket_h
