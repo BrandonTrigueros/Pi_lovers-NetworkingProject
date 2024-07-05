@@ -15,7 +15,7 @@ Client::~Client() {}
 void Client::run()
 {
   this->clientSocket = new Socket('s', false);
-  this->ipDirection = "172.16.123.67"; // ToDo change to the server's IP as needed (can be obtained dynamically in the constructor)
+  this->ipDirection = "172.16.123.68"; // ToDo change to the server's IP as needed (can be obtained dynamically in the constructor)
   this->request = "GET /" + this->figure + "/ /HTTP/1.1\r\n";
   this->clientSocket->Connect(this->ipDirection, CLIENT_PORT);
   this->clientSocket->Write(this->request.c_str());
@@ -83,6 +83,8 @@ int Client::getLegoParts(std::string serverResponse)
 {
   std::string::size_type keywordPosition = 0;
   keywordPosition = serverResponse.find("figura:");
-  int legoParts = std::stoi(serverResponse.substr(keywordPosition + 8));
+  std::cout << serverResponse << std::endl;
+  std::cout << keywordPosition << std::endl;
+  int legoParts = std::stoi(serverResponse.substr(keywordPosition + 7));
   return legoParts;
 }

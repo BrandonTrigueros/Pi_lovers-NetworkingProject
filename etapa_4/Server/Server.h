@@ -12,7 +12,7 @@
 #include <netdb.h>   // For gethostbyname
 
 
-#define TCP_PORT 4500
+#define TCP_PORT 1233
 #define UDP_PORT 4400
 #define BUFFER_SIZE 1024
 
