@@ -53,10 +53,3 @@
         <TD ALIGN=center> 1</TD>
         <TD ALIGN=center> body red</TD>
       </TR>
-      <TR>
-        <TD style="text-align: left;"> Total de piezas para armar esta figura: 7</TD>
-      </TR>
-    </TABLE>
-  </div>    
-</body>
-</html>

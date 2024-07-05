@@ -28,6 +28,7 @@ void Intermediate::run() {
 }
 
 void Intermediate::listenClients() {
+  std::cout << "Listening client" << std::endl;
   std::thread* worker;
   VSocket *intermediateSocket, *client;
   intermediateSocket = new Socket('s');
@@ -42,6 +43,7 @@ void Intermediate::listenClients() {
 }
 
 void Intermediate::handleClient(void* socket, void* routingTableRef) {
+  std::cout << "Handling client" << std::endl;
   char request[BUFFER_SIZE];
   std::map<std::string, std::vector<std::string>> routingTable
       = *(std::map<std::string, std::vector<std::string>>*)routingTableRef;
@@ -63,7 +65,7 @@ void Intermediate::handleClient(void* socket, void* routingTableRef) {
       std::string figurePart = requestStr + std::to_string(i);
       std::string ipAddress = getFigureIP(figurePart, routingTable);
       serverResponse += sendTCPRequest(figurePart, ipAddress);
-    }
+    }    
   } else {
     serverResponse = "error 404";
   }
@@ -98,7 +100,7 @@ std::string Intermediate::getFigureIP(std::string legoFigure,
 }
 
 void Intermediate::listenIntermediateBroadcast() {
-  std::cout << "Listening to intermediates broadcast" << std::endl;
+  std::cout << "Listening to intermediates broadcast msgs" << std::endl;
   VSocket* intermediate = new Socket('d');
   intermediate->broadcastAddress = "172.16.123.79";
   intermediate->Bind(UDP_PORT_INTERMEDIATE);
@@ -106,10 +108,25 @@ void Intermediate::listenIntermediateBroadcast() {
     char buffer[BUFFER_SIZE];
     char* addrSrc;
     addrSrc = intermediate->ListenBroadcast(buffer, BUFFER_SIZE);
+    std::cout << "Received: " << buffer << "from: " << addrSrc << std::endl;
     struct sockaddr_in* addr = (struct sockaddr_in*)addrSrc;
-
-    // responder al broadcast
-    // gurdar info de tabla de ruteo
+    // Revisar si el prefijo es "Online, " o "Offline"
+    if (strncmp(buffer, "Online", 6) == 0) {
+      // Quitar el prefijo "Online, "
+      std::string message(buffer);
+      message = message.substr(7);
+      std::cout << "Message online: agregando" << message << std::endl;
+      // gurdar info de tabla de ruteo
+      updateTable(message);
+      // responder al broadcast
+      intermediate->sendTo(
+          (void*)this->routeTable.c_str(), this->routeTable.size(), addr);
+    } else if (strncmp(buffer, "Offline", 7) == 0) {
+      std::cout << "Message offline: eliminando servidor: " << addrSrc
+                << std::endl;
+      // quitar direccion ip de tabla de ruteo
+      deleteServer(std::string(addrSrc));
+    }
   }
 }
 
@@ -117,7 +134,27 @@ int Intermediate::broadcastNewServer() {
   std::cout << "Broadcasting new server" << std::endl;
   VSocket* intermediate = new Socket('d');
   intermediate->broadcastAddress = "172.16.123.79";
-  // hacer broacast con ip y pieza conocida
+  std::string broadcastMessage = "Online, " + this->routeTable;
+  char* broadcastMessageChar = (char*)broadcastMessage.c_str();
+  intermediate->Broadcast(broadcastMessageChar, strlen(broadcastMessageChar));
+  char buffer[BUFFER_SIZE];
+  char* addrSrc;
+  addrSrc = intermediate->ListenBroadcast(buffer, BUFFER_SIZE);
+  // quitar prefijo "Connected, "
+  std::string message(buffer);
+  message = message.substr(11);
+  // actualizar tabla de ruteo
+  updateTable(message);
+  return 0;
+}
+
+int broadcastDeadServer() {
+  std::cout << "Broadcasting dead server" << std::endl;
+  VSocket* intermediate = new Socket('d');
+  intermediate->broadcastAddress = "172.16.123.79";
+  std::string broadcastMessage = "Offline";
+  char* broadcastMessageChar = (char*)broadcastMessage.c_str();
+  intermediate->Broadcast(broadcastMessageChar, strlen(broadcastMessageChar));
   return 0;
 }
 
@@ -129,16 +166,17 @@ bool Intermediate::intermediateServer_UDP() {
   VSocket* intermediate = new Socket('d');
   memset(&intermediateInfo, 0, sizeof(intermediateInfo));
   intermediateInfo.sin_family = AF_INET;
+  intermediateInfo.sin_addr.s_addr = inet_addr("10.1.35.14");
   intermediateInfo.sin_port = htons(UDP_PORT_SERVER);
-  intermediateInfo.sin_addr.s_addr = INADDR_ANY;
-
   numBytes = intermediate->sendTo(
       (void*)message, strlen(message), (void*)&intermediateInfo);
+  std::cout << "Num Bytes " << numBytes << std::endl;
   numBytes = intermediate->recvFrom(
       (void*)buffer, BUFFER_SIZE, (void*)&intermediateInfo);
   buffer[numBytes - 1] = '\0';
   updateTable(buffer);
   intermediate->Close();
+  std::cout << "Received: " << buffer << std::endl;
   return numBytes <= 0 ? false : true;
 }
 
@@ -146,10 +184,13 @@ void Intermediate::listenServerUDP() {
   int bytesReceived = 0;
   struct sockaddr_in serverInfo;
   VSocket* intermediate = new Socket('d', false);
-  intermediate->Bind(UDP_PORT_SERVER);
-  char buffer[BUFFER_SIZE];
   char* message = (char*)"Connection accepted";
   memset(&serverInfo, 0, sizeof(serverInfo));
+  serverInfo.sin_family = AF_INET;
+  serverInfo.sin_port = htons(UDP_PORT_SERVER);
+  serverInfo.sin_addr.s_addr = INADDR_ANY;
+  intermediate->Bind(UDP_PORT_SERVER);
+  char buffer[BUFFER_SIZE];
   while (bytesReceived <= 0) {
     bytesReceived = intermediate->recvFrom(
         (void*)buffer, BUFFER_SIZE, (void*)&serverInfo);
@@ -276,4 +317,22 @@ void Intermediate::printTable() {
     }
     std::cout << std::endl;
   }
+}
+
+void Intermediate::deleteServer(std::string ip) {
+  for (auto& pair : this->routingTable) {
+    auto& ips = pair.second;
+    ips.erase(std::remove(ips.begin(), ips.end(), ip), ips.end());
+    if (ips.empty()) {
+      this->routingTable.erase(pair.first);
+    }
+  }
+  routeTable.clear();
+  for (const auto& pair : routingTable) {
+    routeTable += "$" + pair.first;
+    for (const std::string& ip : pair.second) {
+      routeTable += "@" + ip;
+    }
+  }
+  routeTable += "$";
 }

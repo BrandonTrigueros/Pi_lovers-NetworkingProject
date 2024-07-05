@@ -15,7 +15,7 @@
 #define TCP_PORT_INTERMEDIATE 4200
 #define UDP_PORT_INTERMEDIATE 4300
 #define UDP_PORT_SERVER 4400
-#define TCP_PORT_SERVER 4500
+#define TCP_PORT_SERVER 1234
 
 #define BUFFER_SIZE 5024
 
@@ -37,6 +37,7 @@ class Intermediate {
   // intermediate
   void listenIntermediateBroadcast();
   int broadcastNewServer();
+  int broadcastDeadServer();
 
   // server
   bool intermediateServer_UDP();
@@ -54,6 +55,7 @@ class Intermediate {
   void deletePiece(std::string);
   void parseTable();
   void printTable();
+  void deleteServer(std::string);
 
   public:
   Intermediate();

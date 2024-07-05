@@ -22,6 +22,8 @@ void VSocket::InitVSocket(char t, bool IPv6) {
       < 0) {
     perror("setsockopt");
   }
+
+  std::cout << "Socket created succesfully" << std::endl;
 }
 
 void VSocket::InitVSocket(int id) { this->idSocket = id; }
@@ -33,6 +35,8 @@ void VSocket::Close() {
   if (-1 == close_operation) {
     throw std::runtime_error("Socket::Close()");
   }
+
+  std::cout << "Socket closed succesfully" << std::endl;
 }
 
 int VSocket::DoConnect(const char* hostip, int port) {
@@ -120,8 +124,8 @@ int VSocket::Shutdown(int mode) {
 }
 
 size_t VSocket::sendTo(const void* buffer, size_t size, void* addr) {
-  int send_result = sendto(this->idSocket, buffer, size, 0, (sockaddr*)addr,
-      sizeof(*((sockaddr*)addr)));
+  int send_result = sendto(this->idSocket, buffer, size, 0, (const struct sockaddr*)addr,
+      sizeof(*((const struct sockaddr*)addr)));
   if (-1 == send_result) {
     throw(std::runtime_error("VSocket::sendTo()"));
   }
@@ -137,9 +141,6 @@ size_t VSocket::recvFrom(void* buffer, size_t size, void* addr) {
 
   int recv_result
       = recvfrom(this->idSocket, buffer, size, 0, (sockaddr*)addr, &addrlen);
-  if (-1 == recv_result) {
-    std::cerr << "Error: " << strerror(errno) << '\n';
-  }
 
   return recv_result;
 }
@@ -166,18 +167,13 @@ size_t VSocket::Broadcast(char* message, size_t size) {
 }
 
 char* VSocket::ListenBroadcast(char* buffer, size_t size) {
+  // Se supone que el socket ya está bindeado y en modo broadcast
+  int st;
   struct sockaddr_in addr;
   memset((char*)&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
   addr.sin_port = htons(this->port);
   addr.sin_addr.s_addr = inet_addr((char*)this->broadcastAddress);
-
-  int broadcast = 1;
-  int st = setsockopt(
-      idSocket, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
-  if (0 > st) {
-    throw std::runtime_error("Socket::ListenBroadcast( char *, size_t )");
-  }
 
   socklen_t addrLen = (socklen_t)sizeof(struct sockaddr_in);
 

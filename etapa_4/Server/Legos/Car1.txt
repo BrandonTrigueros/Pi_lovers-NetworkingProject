@@ -1,56 +1,27 @@
-<!DOCTYPE HTML>
-<HTML>
-  <HEAD>
-    <TITLE>Figuras de Lego</TITLE>
-    <META PROPERTY="og:title" CONTENT="UCR/ECCI CI0123 PIRO">
-    <META PROPERTY="og:description" CONTENT="Proyecto programado">
-  </HEAD>
-
-  <BODY width="100vw">
-    <DIV BGCOLOR="LIGHTBLUE">
-      <H2>PI LOVERS😍</H2>
-      <H4>Lista de piezas para armar "Carro" </H4>
-      <H4>CI-0123 Proyecto Integrador de Sistemas Operativos y Redes</H4>
-      <H6>By: Fabián, Andrés, José, Brandon</H6>
-    </DIV>
-
-    <DIV>
-      <HR>
-      <CENTER>
-        <H2>Lista de piezas</H2>
-      </CENTER>
-      <TABLE BORDER="1" BGCOLOR="LIGHTBLUE" CELLPADDING="5" ALIGN="CENTER">
-        <TR>
-          <TH>Cantidad</TH>
-          <TH>Descripción</TH>
-        </TR>
-        <TR>
-          <TD ALIGN="CENTER">4</TD>
-          <TD ALIGN="CENTER">slope 2x1 white</TD>
-        </TR>
-        <TR>
-          <TD ALIGN="CENTER">2</TD>
-          <TD ALIGN="CENTER">plate 1x2 white</TD>
-        </TR>
-        <TR>
-          <TD ALIGN="CENTER">1</TD>
-          <TD ALIGN="CENTER">vehicle base 4x7x3</TD>
-        </TR>
-        <TR>
-          <TD ALIGN="CENTER">4</TD>
-          <TD ALIGN="CENTER">tire 15mmx6mm black</TD>
-        </TR>
-        <TR>
-          <TD ALIGN="CENTER">4</TD>
-          <TD ALIGN="CENTER">rim 8mmx6mm gray</TD>
-        </TR>
-        <TR>
-          <TD COLSPAN="2">Total de piezas</TD>
-          <TD ALIGN="CENTER">
-            <H2>15</H2>
-          </TD>
-        </TR>
-      </TABLE>
-    </DIV>
-  </BODY>
-</HTML>
+      <TR>
+        <TD ALIGN="CENTER">4</TD>
+        <TD ALIGN="CENTER">slope 2x1 white</TD>
+      </TR>
+      <TR>
+        <TD ALIGN="CENTER">2</TD>
+        <TD ALIGN="CENTER">plate 1x2 white</TD>
+      </TR>
+      <TR>
+        <TD ALIGN="CENTER">1</TD>
+        <TD ALIGN="CENTER">vehicle base 4x7x3</TD>
+      </TR>
+      <TR>
+        <TD ALIGN="CENTER">4</TD>
+        <TD ALIGN="CENTER">tire 15mmx6mm black</TD>
+      </TR>
+      <TR>
+        <TD ALIGN="CENTER">4</TD>
+        <TD ALIGN="CENTER">rim 8mmx6mm gray</TD>
+      </TR>
+    <TR>
+      <TD style="text-align: left;"> Total de piezas para armar esta figura: 30</TD>
+    </TR>
+    </TABLE>
+  </div>    
+</body>
+</html>

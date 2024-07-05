@@ -69,10 +69,3 @@
         <TD ALIGN=center> 1</TD>
         <TD ALIGN=center> brick 2x2 slope inverted red</TD>
       </TR>
-      <TR>
-        <TD style="text-align: left;"> Total de piezas para armar esta figura: 12</TD>
-      </TR>
-    </TABLE>
-  </div>    
-</body>
-</html>

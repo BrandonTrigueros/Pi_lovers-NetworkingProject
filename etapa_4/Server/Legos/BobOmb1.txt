@@ -11,7 +11,7 @@
         <TD ALIGN=center> legs with plate round 2x2 yellow</TD>
       </TR>
       <TR>
-        <TD style="text-align: left;"> Total de piezas para armar esta figura: 10</TD>
+        <TD style="text-align: left"> Total de piezas para armar esta figura: 10</TD>
       </TR>
     </TABLE>
   </div>    

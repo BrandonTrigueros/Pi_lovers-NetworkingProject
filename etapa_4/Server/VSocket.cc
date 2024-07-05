@@ -116,8 +116,8 @@ int VSocket::Shutdown(int mode) {
 }
 
 size_t VSocket::sendTo(const void* buffer, size_t size, void* addr) {
-  int send_result = sendto(this->idSocket, buffer, size, 0, (sockaddr*)addr,
-      sizeof(*((sockaddr*)addr)));
+  int send_result = sendto(this->idSocket, buffer, size, 0, (const struct sockaddr*)addr,
+      sizeof(*((const struct sockaddr*)addr)));
   if (-1 == send_result) {
     throw(std::runtime_error("VSocket::sendTo()"));
   }

@@ -6,7 +6,7 @@ Client::Client()
   this->socketType = ' ';
   this->figure = "";
   this->request = "";
-  this->ipDirection = nullptr; // ToDo (Bradon or Jose): maybe we can obtain dynamically this
+  this->ipDirection = nullptr; // ToDo (Brandon or Jose): maybe we can obtain dynamically this
   memset(this->buffer, 0, MAXBUF);
 }
 
@@ -15,7 +15,7 @@ Client::~Client() {}
 void Client::run()
 {
   this->clientSocket = new Socket('s', false);
-  this->ipDirection = "127.0.0.1"; // ToDo change to the server's IP as needed (can be obtained dynamically in the constructor)
+  this->ipDirection = "172.16.123.67"; // ToDo change to the server's IP as needed (can be obtained dynamically in the constructor)
   this->request = "GET /" + this->figure + "/ /HTTP/1.1\r\n";
   this->clientSocket->Connect(this->ipDirection, CLIENT_PORT);
   this->clientSocket->Write(this->request.c_str());
@@ -31,7 +31,7 @@ void Client::run()
 
 bool Client::analyzeArgs(int argc, char *argv[])
 {
-  bool validArgs = false; // Assumes the arguments are invalid
+  bool validArgs = false; // Assumes the4100 arguments are invalid
   if (argc > 1)
   {
     validArgs = true;
@@ -83,6 +83,6 @@ int Client::getLegoParts(std::string serverResponse)
 {
   std::string::size_type keywordPosition = 0;
   keywordPosition = serverResponse.find("figura:");
-  int legoParts = std::stoi(serverResponse.substr(keywordPosition + 7));
+  int legoParts = std::stoi(serverResponse.substr(keywordPosition + 8));
   return legoParts;
 }
