@@ -167,7 +167,7 @@ size_t VSocket::Broadcast(char* message, size_t size) {
 }
 
 char* VSocket::ListenBroadcast(char* buffer, size_t size) {
-  // Se supone que el socket ya está bindeado y en modo broadcast
+  // Se supone que el socket ya está bindeado
   int st;
   struct sockaddr_in addr;
   memset((char*)&addr, 0, sizeof(addr));

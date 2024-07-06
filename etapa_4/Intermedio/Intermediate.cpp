@@ -6,24 +6,20 @@ Intermediate::~Intermediate() { }
 
 void Intermediate::run() {
   // ! <--------------------------------- Tabla de ruteo y UDP
-  // -----------------------------> requestPieces
+  // ----------------------------->ListenServer -> Solo si no esta conectado a su server
+  // std::cout << YELLOW << "P.I Lovers intermediate server is running" << RESET
+  //           << std::endl;
+  // if (!intermediateServer_UDP()) {
+  //   listenServerUDP();
+  // }
 
-  // Connectintermediates
-  // ListenServer -> Solo si no esta conectado a su server
-  // ListenIntermediates
-  // ! <---------------------------------- Requests TCP
-  // --------------------------------------> ListenClient() SendRequest();
-  std::cout << YELLOW << "P.I Lovers intermediate server is running" << RESET
-            << std::endl;
-  if (!intermediateServer_UDP()) {
-    listenServerUDP();
-  }
-  listenClients();
-  // Al levantarse lo primero que hacemos es escuchar por UDP
+  // ----------------------------->Connect intermediates
+
+  broadcastNewServer();
   // listenIntermediateBroadcast();
-  // Se envía por broadcast las piezas al resto de intermediarios
-  // broadcastNewServer();
-  // Se comienza a escuchar requests de los clientes
+
+  // ! <---------------------------------- Requests TCP
+  // ----------------------------->ListenClient() SendRequest();
   // listenClients();
 }
 
@@ -102,6 +98,7 @@ std::string Intermediate::getFigureIP(std::string legoFigure,
 void Intermediate::listenIntermediateBroadcast() {
   std::cout << "Listening to intermediates broadcast msgs" << std::endl;
   VSocket* intermediate = new Socket('d');
+  std::cout << "Socket UDP para escuchar broadcasts inicializado";
   intermediate->broadcastAddress = "172.16.123.79";
   intermediate->Bind(UDP_PORT_INTERMEDIATE);
   for (;;) {
@@ -133,9 +130,11 @@ void Intermediate::listenIntermediateBroadcast() {
 int Intermediate::broadcastNewServer() {
   std::cout << "Broadcasting new server" << std::endl;
   VSocket* intermediate = new Socket('d');
+  std::cout << "bind al puerto broadcast";
   intermediate->broadcastAddress = "172.16.123.79";
   std::string broadcastMessage = "Online, " + this->routeTable;
   char* broadcastMessageChar = (char*)broadcastMessage.c_str();
+  intermediate->Bind(UDP_PORT_INTERMEDIATE);
   intermediate->Broadcast(broadcastMessageChar, strlen(broadcastMessageChar));
   char buffer[BUFFER_SIZE];
   char* addrSrc;
