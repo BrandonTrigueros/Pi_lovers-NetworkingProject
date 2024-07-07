@@ -15,11 +15,13 @@
 #define TCP_PORT_INTERMEDIATE 4200
 #define UDP_PORT_INTERMEDIATE 4300
 #define UDP_PORT_SERVER 4400
-#define TCP_PORT_SERVER 1234
+#define TCP_PORT_SERVER 4500
 
 #define BUFFER_SIZE 5024
+#define HOSTNAME_LENGTH 1024
 
 #define YELLOW "\033[33m"
+#define GREEN "\033[32m"
 #define BLUE "\033[34m"
 #define UNDERLINE "\033[4m"
 #define RESET "\033[0m"
@@ -56,6 +58,7 @@ class Intermediate {
   void parseTable();
   void printTable();
   void deleteServer(std::string);
+  std::string getIPAddress();
 
   public:
   Intermediate();

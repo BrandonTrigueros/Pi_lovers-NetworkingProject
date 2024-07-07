@@ -15,6 +15,7 @@
 
 #define CLIENT_PORT 4100
 #define MAXBUF 4096
+#define HOSTNAME_LENGTH 1024
 
 #define RED "\033[1;31m"
 #define CYAN "\033[1;36m"
@@ -38,10 +39,10 @@ class Client {
   void run();
   bool analyzeArgs(int, char*[]);
 
-
   void printResponse(std::string);
   int getLegoParts(std::string);
   bool verifyErrorResponse(std::string);
   std::string castHTML(std::string);
+  std::string getIPAddress();
 };
 #endif

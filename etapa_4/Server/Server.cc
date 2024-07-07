@@ -26,14 +26,16 @@ bool Server::serverIntermediate_UDP()
   memset(&intermediateInfo, 0, sizeof(intermediateInfo));
   intermediateInfo.sin_family = AF_INET;
   intermediateInfo.sin_port = htons(UDP_PORT);
-  intermediateInfo.sin_addr.s_addr = inet_addr("10.1.35.14");
+  intermediateInfo.sin_addr.s_addr = inet_addr(getIPAddress().c_str());
   numBytes = intermediate->sendTo(
       (void *)this->myLegoFigures.c_str(), strlen(this->myLegoFigures.c_str()), (void *)&intermediateInfo);
   numBytes = intermediate->recvFrom(
       (void *)buffer, BUFFER_SIZE, (void *)&intermediateInfo);
   buffer[numBytes] = '\0';
+  if(numBytes > 0) {
+    std::cout << GREEN << "Connected" << RESET << std::endl;
+  }
   intermediate->Close();
-  std::cout << "Received: " << buffer << std::endl;
   return numBytes <= 0 ? false : true;
 }
 
@@ -53,19 +55,20 @@ bool Server::listenIntermediateUDP()
   memset(&serverInfo, 0, sizeof(serverInfo));
   while (bytesReceived <= 0 && tries < 5)
   {
-    std::cout << "Listening " << std::endl;
+    std::cout << "Listening Intermediate" << std::endl;
     bytesReceived = intermediate->recvFrom((void *)buffer, BUFFER_SIZE, (void *)&serverInfo);
     tries++;
   }
 
   if (bytesReceived > 0)
   {
+    std::cout << GREEN << "Connected" << RESET << std::endl;
     intermediate->sendTo((void *)this->myLegoFigures.c_str(), strlen(this->myLegoFigures.c_str()), (void *)&serverInfo);
     isConected = true;
   }
   
   intermediate->Close();
-  std::cout << "Broadcast received" << std::endl;
+  // std::cout << "Broadcast received" << std::endl;
   return isConected;
 }
 
@@ -143,9 +146,7 @@ void Server::listenIntermediateTCP() {
   std::thread *thread_TCP;
   VSocket *server, *intermediate;
   server = new Socket('s');
-  std::cout << "ANTES BIND" << std::endl;
   server->Bind(TCP_PORT);
-  std::cout << "DESPUES BIND" << std::endl;
   server->Listen(5);
 
   while (true)

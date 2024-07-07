@@ -6,7 +6,7 @@ Client::Client()
   this->socketType = ' ';
   this->figure = "";
   this->request = "";
-  this->ipDirection = nullptr; // ToDo (Brandon or Jose): maybe we can obtain dynamically this
+  this->ipDirection = this->getIPAddress().c_str();
   memset(this->buffer, 0, MAXBUF);
 }
 
@@ -15,7 +15,6 @@ Client::~Client() {}
 void Client::run()
 {
   this->clientSocket = new Socket('s', false);
-  this->ipDirection = "172.16.123.68"; // ToDo change to the server's IP as needed (can be obtained dynamically in the constructor)
   this->request = "GET /" + this->figure + "/ /HTTP/1.1\r\n";
   this->clientSocket->Connect(this->ipDirection, CLIENT_PORT);
   this->clientSocket->Write(this->request.c_str());
@@ -28,6 +27,8 @@ void Client::run()
   std::string serverResponse(this->buffer);
   printResponse(serverResponse);
 }
+
+
 
 bool Client::analyzeArgs(int argc, char *argv[])
 {
@@ -83,8 +84,39 @@ int Client::getLegoParts(std::string serverResponse)
 {
   std::string::size_type keywordPosition = 0;
   keywordPosition = serverResponse.find("figura:");
-  std::cout << serverResponse << std::endl;
-  std::cout << keywordPosition << std::endl;
   int legoParts = std::stoi(serverResponse.substr(keywordPosition + 7));
   return legoParts;
+}
+
+std::string Client::getIPAddress() {
+  char hostname[HOSTNAME_LENGTH];
+  hostname[HOSTNAME_LENGTH - 1] = '\0';       // Ensure the hostname array is null-terminated
+  gethostname(hostname, HOSTNAME_LENGTH - 1); // Retrieve the hostname of the local machine
+
+  struct addrinfo hints, *res, *p;
+  int status;
+  char ipstr[INET_ADDRSTRLEN]; // Buffer to hold the IPv4 address as a string
+
+  memset(&hints, 0, sizeof hints); // Zero out the hints structure
+  hints.ai_family = AF_INET;       // Specify that we want IPv4 addresses
+  hints.ai_socktype = SOCK_STREAM; // Specify a stream socket (TCP)
+
+  // Get address information for the hostname
+  if ((status = getaddrinfo(hostname, NULL, &hints, &res)) != 0)
+  {
+    std::cerr << "getaddrinfo: " << gai_strerror(status) << std::endl; // Print error message
+    return "";                                                         // Return an empty string on error
+  }
+
+  // Loop through the linked list of results
+  for (p = res; p != NULL; p = p->ai_next)
+  {
+    void *addr = &((struct sockaddr_in *)p->ai_addr)->sin_addr; // Cast the socket address to sockaddr_in and extract the IPv4 address
+    inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr); // Convert the binary IP address to a readable string
+    std::string ipAddress(ipstr); // Create a C++ string from the C-style string
+    freeaddrinfo(res); // Free the memory allocated for the address list
+    return ipAddress; // Return the IP address
+  }
+  freeaddrinfo(res); // Free the memory allocated for the address list in case the loop didn't run
+  return ""; // Return an empty string if no IP address was found
 }

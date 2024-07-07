@@ -7,24 +7,23 @@ Intermediate::~Intermediate() { }
 void Intermediate::run() {
   // ! <--------------------------------- Tabla de ruteo y UDP
   // ----------------------------->ListenServer -> Solo si no esta conectado a su server
-  // std::cout << YELLOW << "P.I Lovers intermediate server is running" << RESET
-  //           << std::endl;
-  // if (!intermediateServer_UDP()) {
-  //   listenServerUDP();
-  // }
+  std::cout << YELLOW << "P.I Lovers intermediate server is running" << RESET
+            << std::endl;
+  if (!intermediateServer_UDP()) {
+    listenServerUDP();
+  }
 
   // ----------------------------->Connect intermediates
 
-  broadcastNewServer();
+  // broadcastNewServer();
   // listenIntermediateBroadcast();
 
   // ! <---------------------------------- Requests TCP
   // ----------------------------->ListenClient() SendRequest();
-  // listenClients();
+  listenClients();
 }
 
 void Intermediate::listenClients() {
-  std::cout << "Listening client" << std::endl;
   std::thread* worker;
   VSocket *intermediateSocket, *client;
   intermediateSocket = new Socket('s');
@@ -39,13 +38,11 @@ void Intermediate::listenClients() {
 }
 
 void Intermediate::handleClient(void* socket, void* routingTableRef) {
-  std::cout << "Handling client" << std::endl;
   char request[BUFFER_SIZE];
   std::map<std::string, std::vector<std::string>> routingTable
       = *(std::map<std::string, std::vector<std::string>>*)routingTableRef;
   Socket* client = (Socket*)socket;
   client->Read(request, BUFFER_SIZE);
-  request[strlen(request)] = '\0';
   std::string response;
   std::string requestStr(request);
   size_t firstSlashPos = requestStr.find_first_of('/');
@@ -55,13 +52,12 @@ void Intermediate::handleClient(void* socket, void* routingTableRef) {
   requestStr = figureComment;
   std::string serverResponse = "";
   if (verifyRequest(requestStr, routingTable)) {
-    std::cout << "REQUEST: " << requestStr << std::endl;
     for (int i = 0; i < 2; i++) {
       memset(request, 0, BUFFER_SIZE);
       std::string figurePart = requestStr + std::to_string(i);
       std::string ipAddress = getFigureIP(figurePart, routingTable);
       serverResponse += sendTCPRequest(figurePart, ipAddress);
-    }    
+    }
   } else {
     serverResponse = "error 404";
   }
@@ -165,17 +161,19 @@ bool Intermediate::intermediateServer_UDP() {
   VSocket* intermediate = new Socket('d');
   memset(&intermediateInfo, 0, sizeof(intermediateInfo));
   intermediateInfo.sin_family = AF_INET;
-  intermediateInfo.sin_addr.s_addr = inet_addr("10.1.35.14");
+  // intermediateInfo.sin_addr.s_addr = inet_addr("10.1.35.14");
+  intermediateInfo.sin_addr.s_addr = inet_addr(getIPAddress().c_str());
   intermediateInfo.sin_port = htons(UDP_PORT_SERVER);
   numBytes = intermediate->sendTo(
       (void*)message, strlen(message), (void*)&intermediateInfo);
-  std::cout << "Num Bytes " << numBytes << std::endl;
   numBytes = intermediate->recvFrom(
       (void*)buffer, BUFFER_SIZE, (void*)&intermediateInfo);
   buffer[numBytes - 1] = '\0';
-  updateTable(buffer);
+  if(numBytes > 0) {
+    std::cout << GREEN << "Connected" << RESET << std::endl;
+    updateTable(buffer);
+  }
   intermediate->Close();
-  std::cout << "Received: " << buffer << std::endl;
   return numBytes <= 0 ? false : true;
 }
 
@@ -191,9 +189,11 @@ void Intermediate::listenServerUDP() {
   intermediate->Bind(UDP_PORT_SERVER);
   char buffer[BUFFER_SIZE];
   while (bytesReceived <= 0) {
+    std::cout << "Listening Server" << std::endl;
     bytesReceived = intermediate->recvFrom(
         (void*)buffer, BUFFER_SIZE, (void*)&serverInfo);
   }
+  std::cout << GREEN << "Connected" << RESET << std::endl;
   updateTable(buffer);
   intermediate->sendTo((void*)message, strlen(message), (void*)&serverInfo);
   intermediate->Close();
@@ -221,6 +221,7 @@ std::string Intermediate::buildRequest(std::string figureName) {
   std::string request = "GET / ";
   request += legoFigure + "%" + figurePart + "//HTTP\r\n\r\n";
   std::cout << BLUE << UNDERLINE << request << RESET << std::endl;
+
   return request;
 }
 
@@ -334,4 +335,38 @@ void Intermediate::deleteServer(std::string ip) {
     }
   }
   routeTable += "$";
+}
+
+
+std::string Intermediate::getIPAddress() {
+  char hostname[HOSTNAME_LENGTH];
+  hostname[HOSTNAME_LENGTH - 1] = '\0';       // Ensure the hostname array is null-terminated
+  gethostname(hostname, HOSTNAME_LENGTH - 1); // Retrieve the hostname of the local machine
+
+  struct addrinfo hints, *res, *p;
+  int status;
+  char ipstr[INET_ADDRSTRLEN]; // Buffer to hold the IPv4 address as a string
+
+  memset(&hints, 0, sizeof hints); // Zero out the hints structure
+  hints.ai_family = AF_INET;       // Specify that we want IPv4 addresses
+  hints.ai_socktype = SOCK_STREAM; // Specify a stream socket (TCP)
+
+  // Get address information for the hostname
+  if ((status = getaddrinfo(hostname, NULL, &hints, &res)) != 0)
+  {
+    std::cerr << "getaddrinfo: " << gai_strerror(status) << std::endl; // Print error message
+    return "";                                                         // Return an empty string on error
+  }
+
+  // Loop through the linked list of results
+  for (p = res; p != NULL; p = p->ai_next)
+  {
+    void *addr = &((struct sockaddr_in *)p->ai_addr)->sin_addr; // Cast the socket address to sockaddr_in and extract the IPv4 address
+    inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr); // Convert the binary IP address to a readable string
+    std::string ipAddress(ipstr); // Create a C++ string from the C-style string
+    freeaddrinfo(res); // Free the memory allocated for the address list
+    return ipAddress; // Return the IP address
+  }
+  freeaddrinfo(res); // Free the memory allocated for the address list in case the loop didn't run
+  return ""; // Return an empty string if no IP address was found
 }
