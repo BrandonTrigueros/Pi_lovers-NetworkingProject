@@ -26,7 +26,7 @@ bool Server::serverIntermediate_UDP()
   memset(&intermediateInfo, 0, sizeof(intermediateInfo));
   intermediateInfo.sin_family = AF_INET;
   intermediateInfo.sin_port = htons(UDP_PORT);
-  intermediateInfo.sin_addr.s_addr = inet_addr("10.1.35.14");
+  intermediateInfo.sin_addr.s_addr = inet_addr("127.0.0.1"); //! Change back to 10.1.35.14
   numBytes = intermediate->sendTo(
       (void *)this->myLegoFigures.c_str(), strlen(this->myLegoFigures.c_str()), (void *)&intermediateInfo);
   numBytes = intermediate->recvFrom(

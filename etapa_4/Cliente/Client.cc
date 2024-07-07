@@ -14,8 +14,8 @@ Client::~Client() {}
 
 void Client::run()
 {
-  this->clientSocket = new Socket('s', false);
-  this->ipDirection = "172.16.123.68"; // ToDo change to the server's IP as needed (can be obtained dynamically in the constructor)
+  this->clientSocket = new Socket('s', false);  //! Change IP back to 172.16.123.68
+  this->ipDirection = "127.0.0.1"; // ToDo change to the server's IP as needed (can be obtained dynamically in the constructor)
   this->request = "GET /" + this->figure + "/ /HTTP/1.1\r\n";
   this->clientSocket->Connect(this->ipDirection, CLIENT_PORT);
   this->clientSocket->Write(this->request.c_str());

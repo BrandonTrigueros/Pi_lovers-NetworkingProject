@@ -26,36 +26,40 @@
 
 class Intermediate {
   private:
-  std::vector<std::string> knownPieces; // Map with the figures of our server
-  std::map<std::string, std::vector<std::string>> routingTable; // Map that contains figure and IP
+  std::map<std::string, std::vector<std::string>>
+      routingTable;  // Map that contains figure and IP
   std::string routeTable;
-  
+  u_int random[2];
+
   // client
   void listenClients();
   static void handleClient(void*, void*);
 
   // intermediate
   void listenIntermediateBroadcast();
-  int broadcastNewServer();
-  int broadcastDeadServer();
+  void broadcastNewServer();
+  void broadcastDeadServer();
 
   // server
   bool intermediateServer_UDP();
   void listenServerUDP();
 
   static std::string sendTCPRequest(std::string, std::string);
-  static std::string getFigureIP(std::string, std::map<std::string, std::vector<std::string>>);
+  static std::string getFigureIP(
+      std::string, std::map<std::string, std::vector<std::string>>);
 
-  static bool verifyRequest(std::string, std::map<std::string, std::vector<std::string>>);
+  static bool verifyRequest(
+      std::string, std::map<std::string, std::vector<std::string>>);
   static std::string buildRequest(std::string);
 
-  std::vector<std::string> split(const std::string &s, char delimiter);
+  std::vector<std::string> split(const std::string& s, char delimiter);
   void updateTable(std::string);
   void addPiece(std::string);
   void deletePiece(std::string);
   void parseTable();
   void printTable();
   void deleteServer(std::string);
+  void addPieces(std::string);
 
   public:
   Intermediate();

@@ -1,18 +1,17 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include "FileManager.h"
 #include "Socket.h"
 #include "VSocket.h"
-#include "FileManager.h"
 #include <filesystem>
 #include <iostream>
+#include <netdb.h>  // For gethostbyname
 #include <thread>
+#include <unistd.h>  // For gethostname
 #include <vector>
-#include <unistd.h> // For gethostname
-#include <netdb.h>   // For gethostbyname
 
-
-#define TCP_PORT 1233
+#define TCP_PORT 1234
 #define UDP_PORT 4400
 #define BUFFER_SIZE 1024
 
@@ -37,7 +36,7 @@ class Server {
   private:
   bool listenIntermediateUDP();
   bool serverIntermediate_UDP();
-  
+
   void scanExistingPieces();
   void concatFigures();
   std::string getIPAddress();

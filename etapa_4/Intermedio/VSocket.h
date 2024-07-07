@@ -41,9 +41,9 @@ class VSocket {
   size_t recvFrom(void*, size_t, void*);
 
   size_t Broadcast(char* message, size_t size);
-  char* ListenBroadcast(char* buffer, size_t size);
+  std::string RecvBroadcast(char* buffer, size_t size);
 
-  char* broadcastAddress;
+  const char* broadcastAddress;
 
   protected:
   int idSocket;

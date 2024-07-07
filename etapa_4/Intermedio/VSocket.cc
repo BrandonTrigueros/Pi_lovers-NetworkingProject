@@ -59,7 +59,7 @@ int VSocket::DoConnect(const char* hostip, int port) {
 }
 
 int VSocket::DoConnect(const char* host, const char* service) {
-  int connect_result;
+  int connect_result = 0;
   if (0 == connect_result) {
   } else {
     throw std::runtime_error(gai_strerror(connect_result));
@@ -124,8 +124,8 @@ int VSocket::Shutdown(int mode) {
 }
 
 size_t VSocket::sendTo(const void* buffer, size_t size, void* addr) {
-  int send_result = sendto(this->idSocket, buffer, size, 0, (const struct sockaddr*)addr,
-      sizeof(*((const struct sockaddr*)addr)));
+  int send_result = sendto(this->idSocket, buffer, size, 0,
+      (const struct sockaddr*)addr, sizeof(*((const struct sockaddr*)addr)));
   if (-1 == send_result) {
     throw(std::runtime_error("VSocket::sendTo()"));
   }
@@ -138,10 +138,8 @@ size_t VSocket::recvFrom(void* buffer, size_t size, void* addr) {
       is causing problems when we have to use the listen();
   */
   socklen_t addrlen = sizeof(*((sockaddr*)addr));
-
   int recv_result
       = recvfrom(this->idSocket, buffer, size, 0, (sockaddr*)addr, &addrlen);
-
   return recv_result;
 }
 
@@ -166,24 +164,13 @@ size_t VSocket::Broadcast(char* message, size_t size) {
   return st;
 }
 
-char* VSocket::ListenBroadcast(char* buffer, size_t size) {
-  // Se supone que el socket ya está bindeado
+std::string VSocket::RecvBroadcast(char* buffer, size_t size) {
   int st;
   struct sockaddr_in addr;
-  memset((char*)&addr, 0, sizeof(addr));
-  addr.sin_family = AF_INET;
-  addr.sin_port = htons(this->port);
-  addr.sin_addr.s_addr = inet_addr((char*)this->broadcastAddress);
-
-  socklen_t addrLen = (socklen_t)sizeof(struct sockaddr_in);
-
-  st = recvfrom(idSocket, buffer, size, 0, (sockaddr*)&addr, &addrLen);
-  if (st < 0) {
-    throw std::runtime_error("Error receiving broadcast message");
+  st = recvFrom(buffer, size, (void*)&addr);
+  if (st > 0) {
+    std::string ip(inet_ntoa(addr.sin_addr));
+    return ip;
   }
-
-  char* senderIP = new char[INET_ADDRSTRLEN];
-  inet_ntop(AF_INET, &(addr.sin_addr), senderIP, INET_ADDRSTRLEN);
-
-  return (char*)senderIP;
+  return "";
 }

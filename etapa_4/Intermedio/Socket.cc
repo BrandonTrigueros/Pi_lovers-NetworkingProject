@@ -1,4 +1,5 @@
 #include "Socket.h"
+#include <iostream>
 
 Socket::Socket(char type, bool IPv6) { this->InitVSocket(type, IPv6); }
 
