@@ -11,13 +11,14 @@
 #include <unistd.h>  // For gethostname
 #include <vector>
 
-#define TCP_PORT 1234
+#define TCP_PORT 4500
 #define UDP_PORT 4400
 #define BUFFER_SIZE 1024
 
 #define HOSTNAME_LENGTH 1024
 
 #define BLUE "\033[34m"
+#define GREEN "\033[32m"
 #define UNDERLINE "\033[4m"
 #define YELLOW "\033[33m"
 #define RESET "\033[0m"

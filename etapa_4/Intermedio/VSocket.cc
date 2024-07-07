@@ -22,8 +22,6 @@ void VSocket::InitVSocket(char t, bool IPv6) {
       < 0) {
     perror("setsockopt");
   }
-
-  std::cout << "Socket created succesfully" << std::endl;
 }
 
 void VSocket::InitVSocket(int id) { this->idSocket = id; }
@@ -35,8 +33,6 @@ void VSocket::Close() {
   if (-1 == close_operation) {
     throw std::runtime_error("Socket::Close()");
   }
-
-  std::cout << "Socket closed succesfully" << std::endl;
 }
 
 int VSocket::DoConnect(const char* hostip, int port) {
