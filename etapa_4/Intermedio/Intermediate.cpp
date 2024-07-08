@@ -175,9 +175,10 @@ void Intermediate::listenIntermediateBroadcast() {
       addr.sin_family = AF_INET;
       addr.sin_port = htons(UDP_PORT_INTERMEDIATE);
       addr.sin_addr.s_addr = inet_addr(addrSrc.c_str());
-      if (strncmp(buffer, "Online, ", 6) == 0) {
+      if (strncmp(buffer, "Online", 6) == 0) {
         std::string message(buffer);
-        message = message.substr(8);
+        size_t pos = message.find('$');
+        message = message.substr(pos);
         std::cout << "Message online: agregando: " << message << std::endl;
 
         std::string response;
@@ -196,7 +197,8 @@ void Intermediate::listenIntermediateBroadcast() {
             (void*)response.c_str(), strlen(response.c_str()), (void*)&addr);
       } else if (strncmp(buffer, "Connected", 9) == 0) {
         std::string message(buffer);
-        message = message.substr(11);
+        size_t pos = message.find('$');
+        message = message.substr(pos);
         std::cout << "Message connected: nueva info: " << message << std::endl;
 
         if (RAND) {
@@ -222,10 +224,10 @@ void Intermediate::listenIntermediateBroadcast() {
         }
       }
     }
-    if (this->miRand >= 500 && reps == 5) {
-      broadcastDeadServer();
-      break;
-    }
+    // if (this->miRand >= 500 && reps == 5) {
+    //   broadcastDeadServer();
+    //   break;
+    // }
     reps++;
   }
   intermediate->Close();
@@ -290,7 +292,9 @@ bool Intermediate::intermediateServer_UDP() {
   memset(&intermediateInfo, 0, sizeof(intermediateInfo));
   intermediateInfo.sin_family = AF_INET;
   // intermediateInfo.sin_addr.s_addr = inet_addr("10.1.35.14");
-  intermediateInfo.sin_addr.s_addr = inet_addr(getIPAddress().c_str());
+  intermediateInfo.sin_addr.s_addr = inet_addr("10.1.137.160");
+  //intermediateInfo.sin_addr.s_addr = inet_addr(getIPAddress().c_str());
+  //std::cout << "this IP address: " << getIPAddress() << std::endl;
   intermediateInfo.sin_port = htons(UDP_PORT_SERVER);
   numBytes = intermediate->sendTo(
       (void*)message, strlen(message), (void*)&intermediateInfo);
