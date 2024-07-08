@@ -1,0 +1,35 @@
+      <TR> 
+        <TD ALIGN=center> 3</TD>
+        <TD ALIGN=center> plate 2x4 black</TD>
+      </TR>
+      <TR>
+        <TD ALIGN=center> 2</TD>
+        <TD ALIGN=center> brick 1x1 round eye yellow</TD>
+      </TR>
+      <TR>
+        <TD ALIGN=center> 1</TD>
+        <TD ALIGN=center> brick 1x2 yellow</TD>
+      </TR>
+      <TR> 
+        <TD ALIGN=center> 1</TD>
+        <TD ALIGN=center> brick 2x2 slope translucent blue</TD>
+      </TR>
+      <TR> 
+        <TD ALIGN=center> 2</TD>
+        <TD ALIGN=center> brick 1x2 translucent blue</TD>
+      </TR>
+      <TR> 
+        <TD ALIGN=center> 1</TD>
+        <TD ALIGN=center> brick 1x2 translucent red</TD>
+      </TR>
+      <TR> 
+        <TD ALIGN=center> 6</TD>
+        <TD ALIGN=center> brick 1x1 red</TD>
+      </TR>
+      <TR>
+        <TD style="text-align: left;"> Total de piezas para armar esta figura: 28</TD>
+      </TR>
+    </TABLE>
+  </div>    
+</body>
+</html>

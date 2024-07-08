@@ -1,0 +1,19 @@
+      <TR> 
+        <TD ALIGN=center> 1</TD>
+        <TD ALIGN=center> plate 2x4 white</TD>
+      </TR>
+      <TR>
+        <TD ALIGN=center> 1</TD>
+        <TD ALIGN=center> plate 2x3 orange</TD>
+      </TR>
+      <TR>
+        <TD ALIGN=center> 1</TD>
+        <TD ALIGN=center> brick 2x2 slope white</TD>
+      </TR>
+      <TR>
+        <TD style="text-align: left;"> Total de piezas para armar esta figura: 11</TD>
+      </TR>
+    </TABLE>
+  </div>    
+</body>
+</html>
