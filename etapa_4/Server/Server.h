@@ -13,7 +13,7 @@
 
 #define TCP_PORT 4500
 #define UDP_PORT 4400
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 5024
 
 #define HOSTNAME_LENGTH 1024
 

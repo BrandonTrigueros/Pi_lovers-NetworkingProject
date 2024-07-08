@@ -4,6 +4,7 @@
 #include "Socket.h"
 #include "VSocket.h"
 #include <algorithm>
+#include <bitset>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -31,7 +32,9 @@ class Intermediate {
   std::map<std::string, std::vector<std::string>>
       routingTable;  // Map that contains figure and IP
   std::string routeTable;
-  u_int random[2];
+  std::string randomNumbers;
+  u_int miRand;
+  char* broadcastAddress;
 
   // client
   void listenClients();
@@ -63,6 +66,11 @@ class Intermediate {
   void deleteServer(std::string);
   std::string getIPAddress();
   void addPieces(std::string);
+
+  std::vector<std::string> splitIP(std::string, char delimiter);
+  std::string ipToBinary(std::string);
+  std::string binaryToIP(std::string);
+  std::string getBroadcastAddress(std::string, std::string);
 
   public:
   Intermediate();

@@ -1,14 +1,58 @@
 #include "Intermediate.h"
 
+#define TABLA 1
+#define RAND 0
+
+std::vector<int> splitStringToInts(const std::string& str) {
+  std::vector<int> numbers;
+  std::stringstream ss(str);
+  std::string temp;
+
+  while (std::getline(ss, temp, ',')) {
+    numbers.push_back(std::stoi(temp));
+  }
+  return numbers;
+}
+
+std::string joinIntsToString(const std::vector<int>& numbers) {
+  std::ostringstream oss;
+  for (size_t i = 0; i < numbers.size(); ++i) {
+    if (i != 0) {
+      oss << ", ";
+    }
+    oss << numbers[i];
+  }
+  return oss.str();
+}
+
+std::string removeNumberFromString(
+    const std::string& numbersStr, const std::string& numberToRemoveStr) {
+  int numberToRemove = std::stoi(numberToRemoveStr);
+  std::vector<int> numbers = splitStringToInts(numbersStr);
+
+  auto it = std::remove(numbers.begin(), numbers.end(), numberToRemove);
+  numbers.erase(it, numbers.end());
+
+  return joinIntsToString(numbers);
+}
+
 u_int crateRandom() {
   srand(time(NULL));
   return rand() % 1000;
 }
 
 Intermediate::Intermediate() {
-  u_int rand = crateRandom();
-  this->random[0] = rand;
-  std::cout << "Random: " << this->random[0] << std::endl;
+  if (RAND) {
+    u_int rand = crateRandom();
+    this->miRand = rand;
+    this->randomNumbers.append(std::to_string(rand));
+  }
+
+  std::string ipAddress = getIPAddress();
+  std::string subnetMask = "255.255.255.0";
+  std::string broadcastAddress
+      = (this->getBroadcastAddress(ipAddress, subnetMask));
+  this->broadcastAddress = (char*)broadcastAddress.c_str();
 }
 
 Intermediate::~Intermediate() { }
@@ -25,14 +69,16 @@ void Intermediate::run() {
 
   // ----------------------------->Connect intermediates
 
-  // broadcastNewServer();
-  // std::thread* broadcastListener
-  //     = new std::thread(&Intermediate::listenIntermediateBroadcast, this);
-  // broadcastListener->join();
+  broadcastNewServer();
+  std::thread broadcastListener(
+      &Intermediate::listenIntermediateBroadcast, this);
+  // broadcastListener.join();  //! Quitar este join que no deja avanzar
+  broadcastListener.detach();
 
   // ! <---------------------------------- Requests TCP
   // ----------------------------->ListenClient() SendRequest();
-  listenClients();
+  sleep(50);
+  // listenClients();
 }
 
 void Intermediate::listenClients() {
@@ -107,61 +153,103 @@ void Intermediate::listenIntermediateBroadcast() {
   std::cout << "Listening to intermediates broadcast msgs" << std::endl;
   char buffer[BUFFER_SIZE];
   VSocket* intermediate = new Socket('d');
-  intermediate->broadcastAddress = "192.168.100.255";
+  // intermediate->broadcastAddress = "192.168.100.255";  //! 172.16.123.79
+  intermediate->broadcastAddress = this->broadcastAddress;
   intermediate->Bind(UDP_PORT_INTERMEDIATE);
+  int reps = 0;
   while (true) {
     std::string addrSrc = "";
     memset(buffer, 0, BUFFER_SIZE);
     addrSrc = intermediate->RecvBroadcast(buffer, BUFFER_SIZE);
-    std::cout << "Received: " << buffer << "from: " << addrSrc << std::endl;
-    // std::cout << "Routing table: " << std::endl;
-    // printTable();
-    std::string random0 = std::to_string(this->random[0]);
-    std::string random1 = std::to_string(this->random[1]);
-    std::cout << "Random 0: " << random0 << std::endl;
-    std::cout << "Random 1: " << random1 << std::endl;
+    std::cout << "Received message: " << buffer << std::endl;
+
+    if (TABLA) {
+      std::cout << "Current table: " << this->routeTable << std::endl;
+    }
+    if (RAND) {
+      std::cout << "Current numbers: " << this->randomNumbers << std::endl;
+    }
 
     if (addrSrc != "") {
       struct sockaddr_in addr;
       addr.sin_family = AF_INET;
       addr.sin_port = htons(UDP_PORT_INTERMEDIATE);
       addr.sin_addr.s_addr = inet_addr(addrSrc.c_str());
-      if (strncmp(buffer, "Online, 1", 6) == 0) {
+      if (strncmp(buffer, "Online, ", 6) == 0) {
         std::string message(buffer);
         message = message.substr(8);
         std::cout << "Message online: agregando: " << message << std::endl;
-        this->random[1] = stoi(message);
-        std::string response = "Connected, " + std::to_string(this->random[0])
-            + ", " + std::to_string(this->random[1]) + routeTable;
+
+        std::string response;
+        if (RAND) {
+          this->randomNumbers.append(", " + message);
+          response = "Connected, " + this->randomNumbers;
+        }
+        if (TABLA) {
+          this->addPieces(message);
+          response = "Connected, " + this->routeTable;
+        }
+
         std::cout << "Sending response: " << response << std::endl;
+        sleep(1);  //! Sleep para local, probar en el lab sin sleep
         intermediate->sendTo(
             (void*)response.c_str(), strlen(response.c_str()), (void*)&addr);
       } else if (strncmp(buffer, "Connected", 9) == 0) {
         std::string message(buffer);
         message = message.substr(11);
-        std::cout << "Message connected: agregando: " << message << std::endl;
-        // get random from string
-        this->random[0] = stoi(message.substr(0, message.find(',')));
-        this->random[1] = stoi(message.substr(message.find(',') + 2));
+        std::cout << "Message connected: nueva info: " << message << std::endl;
+
+        if (RAND) {
+          this->randomNumbers = message;
+        }
+
+        if (TABLA) {
+          this->updateTable(message);
+        }
+
       } else if (strncmp(buffer, "Offline", 7) == 0) {
-        std::cout << "Message offline: eliminando servidor: " << addrSrc
-                  << std::endl;
-        deleteServer(std::string(addrSrc));
+
+        if (RAND) {
+          std::string message(buffer);
+          std::cout << "Message offline: eliminando numero: "
+                    << message.substr(9) << std::endl;
+          std::cout << "Numero a eliminar: " << message.substr(9) << std::endl;
+          this->randomNumbers
+              = removeNumberFromString(this->randomNumbers, message.substr(9));
+        }
+        if (TABLA) {
+          deleteServer(std::string(addrSrc));
+        }
       }
     }
+    if (this->miRand >= 500 && reps == 5) {
+      broadcastDeadServer();
+      break;
+    }
+    reps++;
   }
+  intermediate->Close();
 }
 
 void Intermediate::broadcastNewServer() {
   // Envíar mensaje de broadcast
   VSocket* intermediate = new Socket('d');
-  intermediate->broadcastAddress = "192.168.100.255";
+
+  // intermediate->broadcastAddress = "192.168.100.255";  //! 172.16.123.79
+  intermediate->broadcastAddress = this->broadcastAddress;
+  std::cout << "Intermediate broadcast address: "
+            << intermediate->broadcastAddress << std::endl;
+
   intermediate->Bind(UDP_PORT_INTERMEDIATE);
-  std::cout << "Broadcast socket binded to: " << UDP_PORT_INTERMEDIATE
-            << std::endl;
-  std::string broadcastMessage
-      = "Online, " + std::to_string(this->random[0]);  //+ this->routeTable;
-  std::cout << "Broadcast message: " << broadcastMessage << std::endl;
+
+  std::string broadcastMessage;
+  if (RAND) {
+    broadcastMessage = "Online, " + this->randomNumbers;
+  }
+  if (TABLA) {
+    broadcastMessage = "Online, " + this->routeTable;
+  }
+
   char* broadcastMessageChar = (char*)broadcastMessage.c_str();
   intermediate->Broadcast(broadcastMessageChar, strlen(broadcastMessageChar));
   std::cout << "Mensaje enviado por broadcast: " << broadcastMessage
@@ -172,16 +260,31 @@ void Intermediate::broadcastNewServer() {
 void Intermediate::broadcastDeadServer() {
   std::cout << "Broadcasting dead server" << std::endl;
   VSocket* intermediate = new Socket('d');
-  intermediate->broadcastAddress = "172.16.123.79";
-  std::string broadcastMessage = "Offline";
+
+  // intermediate->broadcastAddress = "192.168.100.255";  //! 172.16.123.79
+  intermediate->broadcastAddress = this->broadcastAddress;
+
+  intermediate->Bind(UDP_PORT_INTERMEDIATE);
+  std::string broadcastMessage;
+
+  if (TABLA) {
+    broadcastMessage = "Offline";
+  }
+  if (RAND) {
+    broadcastMessage = "Offline, " + std::to_string(this->miRand);
+  }
+
   char* broadcastMessageChar = (char*)broadcastMessage.c_str();
   intermediate->Broadcast(broadcastMessageChar, strlen(broadcastMessageChar));
+  std::cout << "Mensaje enviado por broadcast: " << broadcastMessage
+            << std::endl;
+  intermediate->Close();
 }
 
 bool Intermediate::intermediateServer_UDP() {
   int numBytes;
   char buffer[BUFFER_SIZE];
-  char* message = (char*)"Connection request";
+  char* message = (char*)"Online";
   struct sockaddr_in intermediateInfo;
   VSocket* intermediate = new Socket('d');
   memset(&intermediateInfo, 0, sizeof(intermediateInfo));
@@ -406,4 +509,58 @@ std::string Intermediate::getIPAddress() {
   freeaddrinfo(res);  // Free the memory allocated for the address list in case
                       // the loop didn't run
   return "";  // Return an empty string if no IP address was found
+}
+
+std::vector<std::string> split(std::string str, char delimiter) {
+  std::vector<std::string> tokens;
+  std::string token;
+  std::istringstream tokenStream(str);
+  while (std::getline(tokenStream, token, delimiter)) {
+    tokens.push_back(token);
+  }
+  return tokens;
+}
+
+std::string Intermediate::ipToBinary(std::string ip) {
+  std::vector<std::string> octets = split(ip, '.');
+  std::string binaryIp;
+  for (const std::string& octet : octets) {
+    int num = std::stoi(octet);
+    std::bitset<8> bin(num);
+    binaryIp += bin.to_string();
+  }
+  return binaryIp;
+}
+
+std::string Intermediate::binaryToIP(std::string binary) {
+  std::stringstream ip;
+  for (size_t i = 0; i < binary.size(); i += 8) {
+    std::bitset<8> octet(binary.substr(i, 8));
+    ip << octet.to_ulong();
+    if (i < binary.size() - 8) {
+      ip << ".";
+    }
+  }
+  return ip.str();
+}
+
+std::string Intermediate::getBroadcastAddress(
+    std::string ip, std::string subnetMask) {
+  std::string binaryIp = ipToBinary(ip);
+  std::string binaryMask = ipToBinary(subnetMask);
+
+  // Invert the subnet mask
+  std::string invertedMask;
+  for (char bit : binaryMask) {
+    invertedMask += (bit == '0') ? '1' : '0';
+  }
+
+  // Perform bitwise OR between the IP address and the inverted subnet mask
+  std::string broadcastBinary;
+  for (size_t i = 0; i < binaryIp.size(); ++i) {
+    broadcastBinary
+        += (binaryIp[i] == '1' || invertedMask[i] == '1') ? '1' : '0';
+  }
+
+  return binaryToIP(broadcastBinary);
 }

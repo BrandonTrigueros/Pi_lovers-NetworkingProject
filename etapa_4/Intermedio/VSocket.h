@@ -43,7 +43,7 @@ class VSocket {
   size_t Broadcast(char* message, size_t size);
   std::string RecvBroadcast(char* buffer, size_t size);
 
-  const char* broadcastAddress;
+  char* broadcastAddress;
 
   protected:
   int idSocket;
