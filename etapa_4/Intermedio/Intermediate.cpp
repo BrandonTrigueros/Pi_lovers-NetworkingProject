@@ -67,6 +67,8 @@ void Intermediate::run() {
     listenServerUDP();
   }
 
+  std::cout << "TABLA QUE ME LLEGA DEL INTERMEDIO: " << this->routeTable << std::endl;
+
   // ----------------------------->Connect intermediates
 
   broadcastNewServer();
@@ -153,8 +155,8 @@ void Intermediate::listenIntermediateBroadcast() {
   std::cout << "Listening to intermediates broadcast msgs" << std::endl;
   char buffer[BUFFER_SIZE];
   VSocket* intermediate = new Socket('d');
-  // intermediate->broadcastAddress = "192.168.100.255";  //! 172.16.123.79
-  intermediate->broadcastAddress = this->broadcastAddress;
+  intermediate->broadcastAddress = (char*)"172.16.123.79";
+  // intermediate->broadcastAddress = this->broadcastAddress;
   intermediate->Bind(UDP_PORT_INTERMEDIATE);
   int reps = 0;
   while (true) {
@@ -178,7 +180,11 @@ void Intermediate::listenIntermediateBroadcast() {
       if (strncmp(buffer, "Online", 6) == 0) {
         std::string message(buffer);
         size_t pos = message.find('$');
-        message = message.substr(pos);
+        if (pos != std::string::npos) {
+          message = message.substr(pos);
+        } else {
+          continue;
+        }
         std::cout << "Message online: agregando: " << message << std::endl;
 
         std::string response;
@@ -188,7 +194,7 @@ void Intermediate::listenIntermediateBroadcast() {
         }
         if (TABLA) {
           this->addPieces(message);
-          response = "Connected, " + this->routeTable;
+          response = "Connected" + this->routeTable;
         }
 
         std::cout << "Sending response: " << response << std::endl;
@@ -198,7 +204,11 @@ void Intermediate::listenIntermediateBroadcast() {
       } else if (strncmp(buffer, "Connected", 9) == 0) {
         std::string message(buffer);
         size_t pos = message.find('$');
-        message = message.substr(pos);
+        if (pos != std::string::npos) {
+          message = message.substr(pos);
+        } else {
+          continue;
+        }
         std::cout << "Message connected: nueva info: " << message << std::endl;
 
         if (RAND) {
@@ -237,8 +247,8 @@ void Intermediate::broadcastNewServer() {
   // Envíar mensaje de broadcast
   VSocket* intermediate = new Socket('d');
 
-  // intermediate->broadcastAddress = "192.168.100.255";  //! 172.16.123.79
-  intermediate->broadcastAddress = this->broadcastAddress;
+  intermediate->broadcastAddress = (char*)"172.16.123.79";
+  // intermediate->broadcastAddress = this->broadcastAddress;
   std::cout << "Intermediate broadcast address: "
             << intermediate->broadcastAddress << std::endl;
 
@@ -249,7 +259,7 @@ void Intermediate::broadcastNewServer() {
     broadcastMessage = "Online, " + this->randomNumbers;
   }
   if (TABLA) {
-    broadcastMessage = "Online, " + this->routeTable;
+    broadcastMessage = "Online" + this->routeTable;
   }
 
   char* broadcastMessageChar = (char*)broadcastMessage.c_str();
@@ -292,9 +302,8 @@ bool Intermediate::intermediateServer_UDP() {
   memset(&intermediateInfo, 0, sizeof(intermediateInfo));
   intermediateInfo.sin_family = AF_INET;
   // intermediateInfo.sin_addr.s_addr = inet_addr("10.1.35.14");
-  intermediateInfo.sin_addr.s_addr = inet_addr("10.1.137.160");
-  //intermediateInfo.sin_addr.s_addr = inet_addr(getIPAddress().c_str());
-  //std::cout << "this IP address: " << getIPAddress() << std::endl;
+  intermediateInfo.sin_addr.s_addr = inet_addr(getIPAddress().c_str());
+  std::cout << "this IP address: " << getIPAddress() << std::endl;
   intermediateInfo.sin_port = htons(UDP_PORT_SERVER);
   numBytes = intermediate->sendTo(
       (void*)message, strlen(message), (void*)&intermediateInfo);
